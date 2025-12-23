@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Girra Student Portal</title>
+
+  <!-- TAILWIND -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background-color: #000000;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* NEON OUTLINE BOXES - SIMILAR TO FRAMES PWA - MIGRATE TO A SEPERATE CSS - ORGANIZE FILES IN NEXT VERSION*/
+    .neon-box {
+      border-radius: 1rem;
+      border: 2px solid transparent;
+      background: linear-gradient(#0f0f0f, #0f0f0f) padding-box,
+                  linear-gradient(135deg, #ffd500, #fbff00) border-box;
+      backdrop-filter: blur(6px);
+    }
+
+    .nav-glass {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+  <!-- NAV -->
+  <nav class="nav-glass border-b border-gray-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="../static/assets/images/GirraExc/girraween_logo.png" class="w-10 h-10 rounded-lg">
+        <h1 class="text-xl font-semibold tracking-wider">Girra Student Portal</h1>
+      </div>
+
+      <div class="hidden md:flex gap-6 text-sm">
+        <a href="#" class="hover:text-yellow-300">Home</a>
+        <a href="#" class="hover:text-yellow-300">Subjects</a>
+        <a href="#" class="hover:text-yellow-300">Assessment Hub</a>
+        <a href="#" class="hover:text-yellow-300">Calendar</a>
+        <a href="#" class="hover:text-yellow-300">Links</a>
+      </div>
+
+      <div class="flex gap-2">
+        <a href="login.html"
+          class="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-sm">
+          Sign in
+        </a>
+        <a href="signup.html"
+          class="px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold">
+          Register
+        </a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
+
+    <!-- LEFT SIDE HOOK -->
+    <div>
+      <p class="tracking-widest text-yellow-300 mb-2 text-sm font-semibold" data-text = "STUDENT PLATFORM">
+        STUDENT PLATFORM
+      </p>
+
+      <h1 class="text-5xl font-bold leading-tight mb-6">
+        Learn.  
+        Organise.  
+        <span class="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+          Succeed.
+        </span>
+      </h1>
+
+
+      <p class="text-gray-200 text-lg mb-8 max-w-lg">
+        The Girra Student Portal helps you track assessments,
+        check homework, review feedback, and stay ahead.
+        Designed for efficiency. Built for high performance.
+      </p>
+
+      <div class="flex flex-wrap gap-4">
+        <a href="login.html"
+          class="px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-300 to-orange-400 text-black font-semibold hover:opacity-90">
+          Get Started
+        </a>
+
+        <a href="browse.html"
+          class="px-6 py-3 rounded-lg border border-gray-700 bg-black/40 backdrop-blur hover:bg-black/60">
+          Explore portal features
+        </a>
+      </div>
+
+      <div class="mt-12 flex gap-12 text-sm text-gray-300">
+        <div>
+          ⭐ <span class="font-bold">1.4k+</span><br />
+          Student users
+        </div>
+
+        <div>
+          📘 <span class="font-bold">2000+</span><br />
+          Resources uploaded
+        </div>
+
+        <div>
+          🕒 <span class="font-bold">Live</span><br />
+          Real-time updates
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE PANEL - ATTENTION SEEK -->
+    <div class="neon-box p-8">
+      <h2 class="text-2xl font-semibold mb-4">Girraween High School</h2>
+
+      <div class="rounded-xl overflow-hidden mb-6">
+        <img src="../static/assets/images/GirraExc/Girraween_Drone.webp" class="w-full h-64 object-cover">
+      </div>
+
+      <h3 class="text-xl font-semibold mb-2">Assessment Hub</h3>
+      <p class="text-gray-300 mb-4">
+        View due dates, expectations, marking criteria and teacher announcements
+        — all in one place.
+      </p>
+
+      <a href="home.html"
+        class="inline-block mt-2 px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-300 to-orange-400 text-black font-semibold hover:opacity-90">
+        Open Hub
+      </a>
+    </div>
+  </section>
+
+  <footer class="text-center text-xs text-gray-400 pb-10">
+    © 2025 Girraween High School Student Portal
+  </footer>
+
+</body>
+
+</html>

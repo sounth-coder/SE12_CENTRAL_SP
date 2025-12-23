@@ -1,0 +1,232 @@
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: #2E2E2E;
+    color: white;
+    padding: 40px 28px;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.sidebar-logo {
+    max-width: 60%;
+    height: auto;
+}
+
+.central-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-top: 8px;
+    color: #FFDE59;
+}
+
+.menu-title {
+    margin-top: 40px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #F1F1F1;
+}
+
+.menu a {
+    display: block;
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #dcdcdc;
+    text-decoration: none;
+}
+
+.menu a.active {
+    color: #FFDE59;
+    font-weight: 700;
+}
+
+.menu a:hover {
+    color: white;
+}
+
+/* Main layout */
+.main {
+    margin-left: 260px;      /* pushes entire dashboard away from sidebar */
+    padding: 0;              /* removes weird extra padding */
+    background: #111;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.home-page {
+    background: #111;
+    display: block !important;
+    justify-content: initial !important;
+    align-items: initial !important;
+}
+
+/* Welcome banner */
+.welcome-banner {
+    background: #FFDE59;
+    padding: 50px 60px;
+    width: 100%;
+}
+
+
+.welcome-banner h1 {
+    margin-left: 20px;
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.welcome-banner p {
+    margin-top: 10px;
+    margin-left: 30px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Feature cards (Ngo Style) */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+    padding: 40px 80px;
+}
+
+.feature-card {
+    background: #2A2A2A;
+    border-radius: 14px;
+    padding: 22px;
+    height: 135px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border: 2px solid rgba(255,255,255,0.25);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+
+    transition: 0.2s ease;
+}
+
+.feature-card:hover {
+    border-color: rgba(255,255,255,0.75);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+.feature-card h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+}
+
+.feature-card img {
+    width: 48px;
+    height: 48px;
+    opacity: 0.9;
+}
+
+/* Announcement card */
+.announcement-card {
+    background: #1C1C1C;
+    border: 3px solid rgba(255,255,255,0.6);
+    border-radius: 25px;
+    padding: 35px;
+    margin: 0 60px 80px 60px !important;
+    color: #EAEAEA;
+}
+
+.announcement-card h3 {
+    margin-top: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .feature-grid {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 800px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .main {
+        margin-left: 0;
+    }
+
+    .welcome-banner {
+        padding: 40px 30px;
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+/* ================================
+      ANDURIL-STYLE FOOTER
+================================ */
+
+.central-footer {
+    background: #0E0E0E;
+    padding: 60px 80px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 60px;
+    color: #DADADA;
+    margin-top: 80px;
+    border-top: 1px solid #222;
+}
+
+.central-footer h4 {
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: #F5F5F5;
+    letter-spacing: 0.5px;
+}
+
+.central-footer p {
+    margin-top: 12px;
+    color: #999;
+    font-size: 14px;
+}
+
+.central-footer a {
+    display: block;
+    margin: 6px 0;
+    color: #BFBFBF;
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.central-footer a:hover {
+    color: white;
+}
+
+.footer-logo {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+/* Mobile layout */
+@media (max-width: 900px) {
+    .central-footer {
+        grid-template-columns: 1fr 1fr;
+        padding: 40px 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .central-footer {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
