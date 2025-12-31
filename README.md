@@ -1,3 +1,2 @@
 # SE12_CENTRAL_SP
-Girra Student Portal in the workings. 
-
+Student Portal in the workings for a Major Project. [Vague Description for now to minimize search feedback - will update description later]. 
