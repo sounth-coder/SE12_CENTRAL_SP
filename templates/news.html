@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Girra News - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Girra News</h1> <!-- PLACEHOLDERS FOR NOW -->
+                
+                <div class="id-card" style="margin-bottom: 1.5rem;">
+                    <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; background: rgba(196, 169, 98, 0.1); color: var(--girra-yellow); font-size: 0.75rem; margin-bottom: 0.75rem;">Academics</span>
+                    <h3 style="margin-bottom: 0.75rem;">Girraween Students Excel at State Mathematics Competition</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem; font-size: 0.875rem;">January 18, 2026</p>
+                    <p style="color: var(--girra-text-muted);">Our students achieved outstanding results at the recent State Mathematics Competition, with 5 gold medals and 12 distinctions.</p>
+                </div>
+
+                <div class="id-card" style="margin-bottom: 1.5rem;">
+                    <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; background: rgba(196, 169, 98, 0.1); color: var(--girra-yellow); font-size: 0.75rem; margin-bottom: 0.75rem;">Facilities</span>
+                    <h3 style="margin-bottom: 0.75rem;">New STEM Lab Opening in Term 2</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem; font-size: 0.875rem;">January 15, 2026</p>
+                    <p style="color: var(--girra-text-muted);">The school is proud to announce the opening of a state-of-the-art STEM laboratory (sponsored by none other than Sountharikan.T), featuring cutting-edge equipment and collaborative spaces.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

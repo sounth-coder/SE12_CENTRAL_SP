@@ -1,0 +1,245 @@
+/* Page-Specific Styles */
+
+.page-container {
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.02em;
+}
+
+/* Student ID Card */
+.id-card {
+    border-radius: var(--radius-3xl);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(196, 169, 98, 0.15) 0%, rgba(196, 169, 98, 0.10) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(196, 169, 98, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.id-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.id-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-box-large {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-xl);
+    background-color: rgba(196, 169, 98, 0.2);
+    border: 1px solid var(--girra-yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-box-large span {
+    color: var(--girra-yellow);
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+}
+
+.id-logo h2 {
+    font-size: 1.125rem;
+    letter-spacing: 0.02em;
+}
+
+.id-logo p {
+    color: var(--girra-text-muted);
+    font-size: 0.875rem;
+}
+
+.id-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.id-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.id-avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: var(--radius-2xl);
+    background-color: var(--girra-bg-lighter);
+    border: 2px solid rgba(196, 169, 98, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.id-avatar span {
+    font-size: 2.5rem;
+    color: var(--girra-yellow);
+    font-weight: 500;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    color: var(--girra-text-muted);
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: var(--girra-text);
+    letter-spacing: 0.02em;
+}
+
+.info-value.highlight {
+    color: var(--girra-yellow);
+    letter-spacing: 0.05em;
+}
+
+.id-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.qr-code {
+    width: 12rem;
+    height: 12rem;
+    border-radius: var(--radius-2xl);
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-icon {
+    width: 10rem;
+    height: 10rem;
+    color: black;
+}
+
+.id-qr p {
+    color: var(--girra-text-muted);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.id-footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(196, 169, 98, 0.2);
+}
+
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--girra-text-muted);
+}
+
+.footer-icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--girra-yellow);
+    flex-shrink: 0;
+}
+
+.footer-item span {
+    font-size: 0.875rem;
+}
+
+/* Info Panel */
+.info-panel {
+    border-radius: var(--radius-2xl);
+    padding: 1.5rem;
+    background-color: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(42, 42, 42, 0.8);
+}
+
+.info-panel h3 {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+}
+
+.info-panel ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-panel li {
+    color: var(--girra-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+    .id-content {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .id-footer {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .id-card {
+        padding: 1.5rem;
+    }
+    
+    .id-avatar {
+        width: 6rem;
+        height: 6rem;
+    }
+    
+    .id-avatar span {
+        font-size: 2rem;
+    }
+    
+    .qr-code {
+        width: 10rem;
+        height: 10rem;
+    }
+    
+    .qr-icon {
+        width: 8rem;
+        height: 8rem;
+    }
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">    <!-- PLACE HOLDER STUDENT DIGITAL ID - WILL BE BASIC FOR NOW -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student ID - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Student ID</h1>
+                
+                <!-- DIGI ID -->
+                <div class="id-card">
+                    <!-- CARD HEDER -->
+                    <div class="id-header">
+                        <div class="id-logo">
+                            <div class="logo-box-large">
+                                <span>G</span>
+                            </div>
+                            <div>
+                                <h2>Girraween High School</h2>
+                                <p>Student Identification</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STUDENT INFO  -->
+                    <div class="id-content">
+                        <div class="id-info">
+                            <div class="id-avatar">
+                                <span>{{ username[0]|upper }}</span>
+                            </div>
+                            
+                            <div class="info-group">
+                                <div class="info-item">
+                                    <p class="info-label">Full Name</p>
+                                    <p class="info-value">{{ username }}</p>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <p class="info-label">Student ID</p>
+                                    <p class="info-value highlight">GHS-2024-{{ range(1000, 9999)|random }}</p>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <p class="info-label">Year Level</p>
+                                    <p class="info-value">Year 12</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="id-qr">
+                            <div class="qr-code">
+                                <svg class="qr-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                                </svg>
+                            </div>
+                            <p>Scan QR code for verification</p>
+                        </div>
+                    </div>
+
+                    <!-- ADDITIONAL INFO -->
+                    <div class="id-footer">
+                        <div class="footer-item">
+                            <svg class="footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Valid: 2026 Academic Year</span>
+                        </div>
+                        <div class="footer-item">
+                            <svg class="footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>{{ username|lower }}@student.girra.nsw.edu.au</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INSTRUCTIONS -->
+                <div class="info-panel">
+                    <h3>Usage Instructions</h3> <!-- ADD USER INSTRUCTIONS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

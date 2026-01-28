@@ -1,0 +1,22 @@
+<!DOCTYPE html>            <!-- ROUGH - UNSTYLED WARNING PAGE - DETERS UNAUTHORIZED RESOURCE DISTRO -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Open Resource</title>
+</head>
+<body>
+  <h2>{{ r.title }}</h2>
+  <p>{{ r.description }}</p>
+
+  <div style="border:1px solid #444; padding:12px; margin:12px 0;">
+    <b>Notice:</b> Access to this resource is logged (account + time + device/IP).
+    Please don’t redistribute.
+  </div>
+
+  <a href="{{ url_for('resource_open', resource_id=r.id) }}">
+    Continue to Google Drive →
+  </a>
+
+  <p><a href="{{ url_for('resources') }}">Back to resources</a></p>
+</body>
+</html>

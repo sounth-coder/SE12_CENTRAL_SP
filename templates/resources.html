@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Learning Resources</h1>
+                
+                <div class="info-panel" style="margin-bottom: 1.5rem;">
+                    <h3>Study Materials</h3>
+                    <div class="resource-list">
+                    {% for r in allowed %}
+                        <div class="resource-row">
+                        <div>
+                            <p class="resource-title">{{ r.title }}</p>
+                            <p class="resource-meta">
+                            {{ r.subject }} · Year {{ r.min_level }}+
+                            </p>
+                        </div>
+
+                        <a class="resource-action"
+                            href="{{ url_for('resource_gate', resource_id=r.id) }}">
+                            ⬇
+                        </a>
+                        </div>
+                    {% else %}
+                        <p style="opacity:0.6;">No resources available for your year level.</p>
+                    {% endfor %}
+                    </div>
+                </div>
+
+                <div class="info-panel" style="margin-bottom: 1.5rem;">
+                    <h3>Locked Resources</h3>
+
+                    <div class="resource-list">
+                        {% for r in locked %}
+                        <div class="resource-row" style="opacity:0.5; cursor:not-allowed;">
+                            <div>
+                            <p class="resource-title">{{ r.title }}</p>
+                            <p class="resource-meta">
+                                Requires Year {{ r.min_level }} access
+                            </p>
+                            </div>
+
+                            <span class="resource-action">🔒</span>
+                        </div>
+                        {% else %}
+                        <p style="opacity:0.6;">No locked resources.</p>
+                        {% endfor %}
+                    </div>
+                    </div>
+
+
+
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

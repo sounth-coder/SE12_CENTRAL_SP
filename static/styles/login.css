@@ -1,0 +1,249 @@
+/* Login Page Styles */
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Background */
+.background-image {
+    position: fixed;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1660965473915-b8225fcb5ef2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWdoJTIwc2Nob29sJTIwYWVyaWFsJTIwdmlld3xlbnwxfHx8fDE3NjcyNDE2MTd8MA&ixlib=rb-4.1.0&q=80&w=1080');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+}
+
+.background-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(12px);
+}
+
+/* Back Button */
+.back-button {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-3xl);
+    background-color: rgba(26, 26, 26, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(196, 169, 98, 0.2);
+    color: var(--girra-text-muted);
+    transition: all var(--transition-normal);
+}
+
+.back-button:hover {
+    color: var(--girra-yellow);
+    border-color: rgba(196, 169, 98, 0.4);
+}
+
+.back-button span {
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+}
+
+/* Login Container */
+.login-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 28rem;
+    padding: 1.5rem;
+}
+
+.login-card {
+    border-radius: var(--radius-3xl);
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(196, 169, 98, 0.15) 0%, rgba(196, 169, 98, 0.10) 100%);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(196, 169, 98, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Logo */
+.logo-circle {
+    width: 6rem;
+    height: 6rem;
+    margin: 0 auto 2rem;
+    border-radius: var(--radius-2xl);
+    background-color: rgba(196, 169, 98, 0.15);
+    border: 2px solid rgba(196, 169, 98, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-circle span {
+    font-size: 1.5rem;
+    color: var(--girra-yellow);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+}
+
+/* Titles */
+.login-title {
+    text-align: center;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.02em;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: var(--girra-text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--girra-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.02em;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-xl);
+    background-color: rgba(26, 26, 26, 0.5);
+    border: 1px solid var(--girra-border);
+    color: var(--girra-text);
+    font-size: 1rem;
+    transition: all var(--transition-normal);
+}
+
+.form-input::placeholder {
+    color: rgba(160, 160, 160, 0.5);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: rgba(196, 169, 98, 0.5);
+    box-shadow: 0 0 0 3px rgba(196, 169, 98, 0.1);
+}
+
+/* Form Options */
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.checkbox-label span {
+    font-size: 0.875rem;
+    color: var(--girra-text-muted);
+}
+
+.link-button {
+    background: none;
+    border: none;
+    color: var(--girra-yellow);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.link-button:hover {
+    color: rgba(196, 169, 98, 0.8);
+}
+
+/* Submit Button */
+.btn-submit {
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: var(--radius-xl);
+    background-color: var(--girra-yellow);
+    color: #000;
+    border: none;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 16px rgba(196, 169, 98, 0.2);
+    letter-spacing: 0.02em;
+}
+
+.btn-submit:hover {
+    background-color: rgba(196, 169, 98, 0.9);
+    box-shadow: 0 6px 20px rgba(196, 169, 98, 0.3);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: var(--radius-xl);
+    background-color: var(--girra-bg-lighter);
+    border: 1px solid var(--girra-border);
+    color: var(--girra-text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn-cancel:hover {
+    color: var(--girra-text);
+    border-color: rgba(196, 169, 98, 0.3);
+}
+
+.form-actions .btn-submit {
+    flex: 1;
+}
+
+/* Footer */
+.login-footer {
+    text-align: center;
+    color: var(--girra-text-muted);
+    font-size: 0.75rem;
+    margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .login-card {
+        padding: 2rem;
+    }
+    
+    .back-button {
+        top: 1rem;
+        left: 1rem;
+    }
+}

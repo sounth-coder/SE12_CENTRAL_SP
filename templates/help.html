@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Centre - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Help Centre</h1>
+                
+                <div class="info-panel" style="margin-bottom: 1.5rem;">
+                    <h3>Contact Support</h3>
+                    <ul>
+                        <li>• Phone: (02) 9896 3111 - Call during school hours</li>
+                        <li>• Email: support@girra.nsw.edu.au - Response within 24 hours</li>
+                        <li>• Visit: School Office - Open Monday-Friday, 8:00 AM - 4:00 PM</li>
+                    </ul>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Frequently Asked Questions</h3>
+                    <ul>
+                        <li>• <strong>How do I reset my password?</strong><br>Use the 'Forgot Password' link on the login page to receive a reset link via your school email.</li>
+                        <li>• <strong>Where can I find my timetable?</strong><br>Your timetable is available in the Resources section or through the Google Classroom link.</li>
+                        <li>• <strong>How do I report a technical issue?</strong><br>Email support@girra.nsw.edu.au with details of the issue, including screenshots if possible.</li>
+                        <li>• <strong>Can I access the portal from home?</strong><br>Yes, the portal is accessible from anywhere with an internet connection using your student credentials.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Girraween Student Portal</title>  <!-- RIVAL TO SENTRAL ANNOUNCEMENTS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Announcements</h1>
+                
+                <div class="id-card" style="margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0.5rem;">📌 Term 1 Assessment Schedule Released</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 15, 2026 • Academic</p>
+                    <p style="color: var(--girra-text-muted);">The assessment schedule for Term 1 is now available. Please check your Google Classroom for detailed information.</p>
+                </div>
+
+                <div class="id-card" style="margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0.5rem;">📌 School Photo Day - February 5th</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 12, 2026 • Events</p>
+                    <p style="color: var(--girra-text-muted);">School photos will be taken on February 5th. Please ensure you are in full school uniform.</p>
+                </div>
+
+                <div class="info-panel" style="margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0.5rem;">Sports Awards Dress Code</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 10, 2026 • Sports</p>
+                    <p style="color: var(--girra-text-muted);">Please wear your formal school uniform on the 16th of February, including blazers and ties.</p>
+                </div>
+
+                <div class="info-panel">
+                    <h3 style="margin-bottom: 0.5rem;">Library Extended Hours</h3>
+                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 8, 2026 • Services</p>
+                    <p style="color: var(--girra-text-muted);">The library will be open until 6 PM on Wednesdays for Year 12 students during Term 1.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>
