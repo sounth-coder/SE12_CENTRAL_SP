@@ -129,10 +129,10 @@ def resource_gate(resource_id):
     if not can_access(user_level, r['min_level']):
         return "Forbidden", 403
 
-    # log access through portal
+    # LOG ACCESS THROUGH IP  
     log_resource_access(session['user_id'], resource_id)
 
-    # show a warning/confirm page BEFORE redirecting
+    # SHOW A WARNING PAGE BEFORE PROCEEDING 
     return render_template('resource_gate.html', r=dict(r))
 
 @app.route('/resource/<int:resource_id>/open')
@@ -206,7 +206,7 @@ def logout():
 def forgot_password():
     """Handle forgot password request"""
     email = request.json.get('email')
-    # MOCK FOR NOW - WILL UPDATE THIS WITH A REAL API SERVICE LATER
+    # MOCK FOR NOW - WILL UPDATE THIS WITH A REAL API SERVICE LATER - WILL NEED TO DO 2FA API IN NEXT COMMIT
     return jsonify({'success': True, 'message': 'Password reset link sent to your school email!'})
 
 if __name__ == '__main__':
@@ -216,4 +216,5 @@ if __name__ == '__main__':
 #if __name__ == "__main__":
 #    app.run(debug=True)
 
+### NEED TO FIX ROLE BASED ACCESS 
 

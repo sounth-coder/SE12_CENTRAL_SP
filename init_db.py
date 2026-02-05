@@ -33,10 +33,10 @@ CREATE TABLE IF NOT EXISTS resources (
     description TEXT,
     drive_url TEXT NOT NULL,
     subject TEXT NOT NULL,
-    min_level TEXT NOT NULL CHECK(min_level IN ('7','8','9','10','11','12','T')),
+    min_level TEXT NOT NULL CHECK(min_level IN ('7','8','9','10','11','12','T')),    
     created_at TEXT DEFAULT (datetime('now'))
 );
-""")
+""")      
 
 # RESOURCE ACCESS LOGS
 cur.execute("""
@@ -58,7 +58,7 @@ password = bcrypt.generate_password_hash("Password123!").decode()
 
 users = [
     ('Abby','Johnson','abby.johnson@girraween.nsw.edu.au', password,'10'),
-    ('Bob','Smith','bob.smith@girraween.nsw.edu.au', password,'11'),
+    ('Bob','Smith','skibidi', password,'11'),
     ('Catherine','Davis','catherine.davis@girraween.nsw.edu.au', password,'12'),
     ('Daniel','Brown','daniel.brown@girraween.nsw.edu.au', password,'9'),
     ('Eva','Martinez','eva.martinez@girraween.nsw.edu.au', password,'10'),
