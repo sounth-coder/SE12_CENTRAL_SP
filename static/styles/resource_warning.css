@@ -1,0 +1,150 @@
+/*THIS PAGE IS DESIGNED TO SERVE AS A WARNING TO KEEP CONFIDENTIAL ACADEMIC MATERIAL TO THEIR OWN SCHOOL ONLY! */
+.resource-warning-wrap{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background: var(--girra-bg);
+}
+
+.resource-warning-card{
+  width: 100%;
+  max-width: 56rem;
+  background: rgba(20, 20, 20, 0.75);
+  border: 1px solid rgba(42, 42, 42, 0.9);
+  border-radius: var(--radius-2xl);
+  padding: 2rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+}
+
+.resource-warning-header{
+  margin-bottom: 1.25rem;
+}
+
+.resource-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: rgba(232, 232, 232, 0.75);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.resource-title{
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.resource-desc{
+  color: var(--girra-text-muted);
+  max-width: 46rem;
+}
+
+/* WARNING PANEL */
+.warning-panel{
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.25rem;
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(255, 70, 70, 0.25);
+  background:
+    linear-gradient(135deg, rgba(255, 70, 70, 0.12) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(196, 169, 98, 0.06) 100%);
+}
+
+.warning-top{
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.warning-dot{
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 70, 70, 0.95);
+  box-shadow: 0 0 14px rgba(255, 70, 70, 0.55);
+}
+
+.warning-title{
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.warning-text{
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+  margin-top: 0.35rem;
+}
+
+.warning-subtext{
+  margin-top: 0.65rem;
+  color: rgba(232, 232, 232, 0.75);
+  font-size: 0.85rem;
+}
+
+/* Actions */
+.warning-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn-continue{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-3xl);
+  background: var(--girra-yellow);
+  color: #000;
+  font-weight: 600;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  box-shadow: 0 6px 18px rgba(196, 169, 98, 0.22);
+}
+
+.btn-continue:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(196, 169, 98, 0.28);
+  background: rgba(196, 169, 98, 0.92);
+}
+
+.btn-back{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-3xl);
+  border: 1px solid rgba(196, 169, 98, 0.35);
+  color: rgba(232, 232, 232, 0.9);
+  background: rgba(0,0,0,0.15);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.btn-back:hover{
+  border-color: rgba(196, 169, 98, 0.6);
+  background: rgba(255,255,255,0.03);
+}
+
+
+.warning-footer{
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(42, 42, 42, 0.85);
+  color: rgba(160, 160, 160, 0.8);
+  font-size: 0.8rem;
+}
+
+
+@media (max-width: 520px){
+  .resource-warning-card{ padding: 1.4rem; }
+  .resource-title{ font-size: 1.6rem; }
+  .btn-continue, .btn-back{ width: 100%; }
+}
