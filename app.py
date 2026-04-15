@@ -3,12 +3,53 @@ import os
 from datetime import timedelta
 import sqlite3
 from flask_bcrypt import Bcrypt
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+### IMPORTANT DELETE THIS BEFORE UPLOADING TO GITHUB - SECURITY RISK - WILL REPLACE THIS LATER ###
+import google.generativeai as genai
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-2.5-flash")
+### IMPORTANT DELETE THIS BEFORE UPLOADING TO GITHUB - SECURITY RISK - WILL REPLACE THIS LATER ###
+
 
 app = Flask(__name__, 
             static_folder='static',
             template_folder='templates')
 
 bcrypt = Bcrypt(app)
+
+def search_documents(question, top_k=4):
+
+    conn = sqlite3.connect("knowledge.db")
+    cur = conn.cursor()
+
+    q_emb = embed_model.encode(question)
+
+    cur.execute("SELECT filename, content, embedding FROM documents")
+    rows = cur.fetchall()
+
+    scored = []
+
+    for filename, content, emb_blob in rows:
+        emb = np.frombuffer(emb_blob, dtype=np.float32)
+
+        similarity = np.dot(q_emb, emb) / (
+            np.linalg.norm(q_emb) * np.linalg.norm(emb)
+        )
+
+        scored.append((similarity, filename, content))
+
+    conn.close()
+
+    scored.sort(reverse=True)
+
+    return scored[:top_k]
 
 def get_db():
     conn = sqlite3.connect("girra_portal.db")
@@ -36,7 +77,7 @@ def log_resource_access(user_id: int, resource_id: int):
 
 # SECRET KEY FOR SESSIONS
 app.secret_key = 'girraween-student-portal-2026-secret-key'
-app.permanent_session_lifetime = timedelta(hours=2)
+app.permanent_session_lifetime = timedelta(hours=1)
 
 @app.route('/')
 def index():
@@ -202,12 +243,66 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@app.route('/terms')
+def terms():
+    """Terms & Conditions page"""
+    return render_template('terms.html')
+
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
     """Handle forgot password request"""
     email = request.json.get('email')
     # MOCK FOR NOW - WILL UPDATE THIS WITH A REAL API SERVICE LATER - WILL NEED TO DO 2FA API IN NEXT COMMIT
     return jsonify({'success': True, 'message': 'Password reset link sent to your school email!'})
+
+@app.post("/api/chat")
+def api_chat():
+
+    data = request.get_json(silent=True) or {}
+    msg = (data.get("message") or "").strip()
+
+    if not msg:
+        return jsonify(error="Message required"), 400
+
+    try:
+
+        results = search_documents(msg)
+
+        context = "\n\n".join(
+            f"[{file}]\n{content}"
+            for _, file, content in results
+        )
+
+        response = model.generate_content(f"""
+You are CENTRAL, the Girra Student Portal assistant.
+
+Rules:
+- Prioritise information from the provided school documents.
+- If the information is not present in the documents, you may use general curriculum knowledge.
+- You may evaluate student work (e.g., essays) and give estimated marks using HSC marking standards.
+- When evaluating essays, give a mark out of 20 and brief feedback.
+- Do not refuse to help with academic questions or essay feedback.
+- Answer in under 150 words unless the student asks for detailed feedback.
+                                          
+HSC Marking Guidelines (simplified): 
+17–20: Insightful analysis, strong textual conversation, sophisticated language.
+13–16: Clear analysis with good textual support.
+9–12: Basic understanding with limited analysis.
+1–8: Limited understanding with minimal textual reference.
+                                                                   
+Be concise and helpful.
+
+School Documents:
+{context}
+
+Student Question:
+{msg}
+""")
+
+        return jsonify(reply=response.text)
+
+    except Exception as e:
+        return jsonify(error=str(e)), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
