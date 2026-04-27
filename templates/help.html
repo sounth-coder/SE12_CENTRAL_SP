@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Girra Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">  <!-- Contains CSS for the chatbot -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- For rendering markdown in chat responses -->
+    <script>
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+    </script>
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Girra Chat & Help Centre</h1>
+    
+
+                <div class="chat-panel">
+                <div class="chat-header">
+                    <div class="chat-title">
+                    <span class="chat-dot"></span>
+                    CENTRAL Assistant
+                    </div>
+                    <div class="chat-subtitle">Ask about assessments, resources, or portal navigation.</div>
+                </div>
+
+                <div id="chatMessages" class="chat-messages" aria-live="polite">
+                    <div class="chat-msg bot">
+                    <div class="bubble markdown-content">
+                        Hey I’m the CENTRAL assistant. What do you need help with?
+                    </div>
+                    </div>
+                </div>
+
+                <form id="chatForm" class="chat-inputbar" autocomplete="off">
+                    <input
+                    id="chatInput"
+                    class="chat-input"
+                    type="text"
+                    placeholder="Message CENTRAL Assistant…"
+                    required
+                    />
+                    <button class="chat-send" type="submit">Send</button>
+                </form>
+                </div>
+
+                <div class="info-panel" style="margin-bottom: 1.5rem;">
+                    <h3>Contact Support</h3>
+                    <ul>
+                        <li>• Phone: (02) 9896 3111 - Call during school hours</li>
+                        <li>• Email: girraween-h.school@det.nsw.edu.au - Response within 72 hours</li>
+                        <li>• Visit: School Office - Open Monday-Friday, 8:45 AM - 3:10 PM</li>
+                        <li>• Its OK not being OK - Call 1800 55 1800 - 24/7</li>
+                    </ul>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Frequently Asked Questions</h3>
+                    <ul>
+                        <li>• <strong>How do I reset my password?</strong><br>Use the 'Forgot Password' link on the login page to receive a reset link via your school email.</li>
+                        <li>• <strong>Where can I find my timetable?</strong><br>Your timetable is available in the Resources section or through the Google Classroom link.</li>
+                        <li>• <strong>How do I report a technical issue?</strong><br>Email girraween-h.school@det.nsw.edu.au with details of the issue, including screenshots if possible.</li>
+                        <li>• <strong>Can I access the portal from home?</strong><br>Yes, the portal is accessible from anywhere with an internet connection using your student credentials.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- T'S AND C'S ARE IMPORTANT HERE -->
+    <div id="termsOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="modal-card">
+        <button id="termsClose" class="modal-close" aria-label="Close">&times;</button>
+
+        <h2 id="termsTitle" class="modal-title">Quick Notice</h2>
+        <p class="modal-text">
+        By using CENTRAL Assistant, you agree to follow the portal’s <a href="/terms" style="color: var(--girra-yellow); text-decoration:none;">Terms & Conditions</a> and school ICT policies.
+        <br><br>
+        Do not share passwords or personal information.
+        </p>
+
+        <div class="modal-actions">
+        <button id="termsOk" class="modal-ok">OK</button>
+        </div>
+    </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/chat.js') }}"></script>
+</body>
+</html>
+

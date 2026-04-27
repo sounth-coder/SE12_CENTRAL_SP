@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Resource</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/resource_warning.css') }}">
+</head>
+
+<body>
+  <div class="resource-warning-wrap">
+    <div class="resource-warning-card">
+
+      <div class="resource-warning-header">
+        <span class="resource-badge">RESOURCE ACCESS</span>
+        <h1 class="resource-title">{{ r.title }}</h1>
+        {% if r.description %}
+          <p class="resource-desc">{{ r.description }}</p>
+        {% endif %}
+      </div>
+
+      <div class="warning-panel">
+        <div class="warning-top">
+          <span class="warning-dot"></span>
+          <h2 class="warning-title">Notice</h2>
+        </div>
+
+        <p class="warning-text">
+          Access to this resource is logged (account + time + device/IP). Please don’t redistribute.
+        </p>
+
+        <p class="warning-subtext">
+          If you were not authorised to access this content, stop here and return to the portal. Any attempt to distribute or share this content may result in disciplinary action.
+        </p>
+      </div>
+
+      <div class="warning-actions">
+        <a class="btn-continue" href="{{ url_for('resource_open', resource_id=r.id) }}">
+          Continue to Google Drive →
+        </a>
+
+        <a class="btn-back" href="{{ url_for('resources') }}">
+          Back to Resources
+        </a>
+      </div>
+
+      <div class="warning-footer">
+        CENTRAL · Girra Student Portal
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

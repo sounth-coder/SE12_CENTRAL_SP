@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms & Conditions • Girra Student Portal</title>
+
+  <!-- Reuse your existing theme/styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+
+  <!-- Page-only styling (no external CSS edits needed) -->
+  <style>
+    .terms-wrap {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .terms-hero {
+      border-radius: var(--radius-2xl);
+      padding: 1.25rem 1.25rem;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, rgba(196, 169, 98, 0.14) 0%, rgba(196, 169, 98, 0.07) 100%);
+      border: 1px solid rgba(196, 169, 98, 0.18);
+    }
+
+    .terms-hero h1 {
+      margin: 0 0 0.25rem 0;
+      letter-spacing: 0.02em;
+      font-size: 1.6rem;
+    }
+
+    .terms-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      color: var(--girra-text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(196, 169, 98, 0.22);
+      background: rgba(20, 20, 20, 0.55);
+    }
+
+    .terms-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 980px) {
+      .terms-grid {
+        grid-template-columns: 320px 1fr;
+        align-items: start;
+      }
+    }
+
+    .terms-card {
+      border-radius: var(--radius-2xl);
+      padding: 1.1rem;
+      background-color: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(42, 42, 42, 0.85);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .toc-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 0 0 0.6rem 0;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .toc {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .toc a {
+      display: block;
+      padding: 0.55rem 0.7rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(196, 169, 98, 0.10);
+      background: rgba(26, 26, 26, 0.45);
+      color: var(--girra-text);
+      text-decoration: none;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+      font-size: 0.92rem;
+    }
+
+    .toc a:hover {
+      transform: scale(1.01);
+      border-color: rgba(196, 169, 98, 0.35);
+      color: var(--girra-yellow);
+    }
+
+    .terms-content h2 {
+      margin: 0.2rem 0 0.55rem;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+    }
+
+    .terms-content p,
+    .terms-content li {
+      color: var(--girra-text-muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .terms-content ul {
+      margin: 0.35rem 0 0.85rem 1.1rem;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(196, 169, 98, 0.12);
+      margin: 1rem 0;
+    }
+
+    .callout {
+      border-radius: var(--radius-2xl);
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(196, 169, 98, 0.22);
+      background: rgba(196, 169, 98, 0.08);
+      margin: 0.9rem 0;
+    }
+
+    .callout strong {
+      color: var(--girra-yellow);
+      font-weight: 600;
+    }
+
+    .terms-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+
+    .ack {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      color: var(--girra-text-muted);
+      font-size: 0.92rem;
+    }
+
+    .ack input {
+      margin-top: 0.25rem;
+      transform: scale(1.1);
+      accent-color: var(--girra-yellow);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(196, 169, 98, 0.25);
+      background: rgba(26, 26, 26, 0.55);
+      color: var(--girra-text);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      transform: scale(1.01);
+      border-color: rgba(196, 169, 98, 0.5);
+    }
+
+    .btn-primary {
+      background: rgba(196, 169, 98, 0.14);
+      color: var(--girra-yellow);
+      border-color: rgba(196, 169, 98, 0.35);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .inline-link {
+      color: var(--girra-yellow);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(196, 169, 98, 0.35);
+    }
+
+    .inline-link:hover {
+      opacity: 0.9;
+    }
+
+    .mini-note {
+      font-size: 0.85rem;
+      color: rgba(160, 160, 160, 0.75);
+      margin-top: 0.35rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard">
+    {% include 'sidebar.html' %}
+
+    <main class="main-content">
+      <div class="page-container terms-wrap">
+        <!-- Hero -->
+        <div class="terms-hero">
+          <h1>Terms & Conditions</h1>
+          <div class="terms-meta" aria-label="Document details">
+            <span class="pill">📌 Girra Student Portal</span>
+            <span class="pill">🗓️ Last updated: <strong style="color: var(--girra-yellow); font-weight: 600;">March 2, 2026</strong></span>
+            <span class="pill">🔐 Applies to: logged-in users</span>
+          </div>
+          <p class="mini-note">
+            This page explains how you may use the portal, CENTRAL Assistant, and school resources. If anything here conflicts with official school/Department policy, the official policy takes precedence.
+          </p>
+        </div>
+
+        <div class="terms-grid">
+          <!-- TOC -->
+          <aside class="terms-card" aria-label="Table of contents">
+            <div class="toc-title">
+              <span>Contents</span>
+              <span style="color: var(--girra-yellow); font-size: 0.9rem;">↴</span>
+            </div>
+            <ul class="toc">
+              <li><a href="#overview">1. Overview</a></li>
+              <li><a href="#eligibility">2. Eligibility & Accounts</a></li>
+              <li><a href="#acceptable-use">3. Acceptable Use</a></li>
+              <li><a href="#central">4. CENTRAL Assistant</a></li>
+              <li><a href="#resources">5. Resources & Copyright</a></li>
+              <li><a href="#privacy">6. Privacy & Logging</a></li>
+              <li><a href="#security">7. Security</a></li>
+              <li><a href="#availability">8. Availability & Changes</a></li>
+              <li><a href="#contact">9. Contact</a></li>
+              <li><a href="#acknowledgement">10. Acknowledgement</a></li>
+            </ul>
+
+            <div class="divider"></div>
+
+            <div style="color: var(--girra-text-muted); font-size: 0.9rem; line-height: 1.4;">
+              <strong style="color: var(--girra-yellow); font-weight: 600;">Reminder:</strong>
+              Don’t share passwords. Don’t upload or request private info. Be respectful.
+            </div>
+          </aside>
+
+          <!-- Content -->
+          <section class="terms-card terms-content" aria-label="Terms content">
+            <section id="overview">
+              <h2>1. Overview</h2>
+              <p>
+                The Girra Student Portal (“Portal”) provides students with access to school-related information and features, including
+                announcements, resources, and the CENTRAL Assistant (“CENTRAL”). By using the Portal, you agree to comply with these Terms,
+                school ICT requirements, and any relevant Department policies.
+              </p>
+
+              <div class="callout">
+                <strong>Plain English:</strong> Use the portal for school stuff, be safe online, and follow school rules.
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="eligibility">
+              <h2>2. Eligibility & Accounts</h2>
+              <ul>
+                <li>You must be a current student (or authorised user) to access protected features.</li>
+                <li>You are responsible for activity on your account, including any actions taken using your login credentials.</li>
+                <li>You must keep your password private and use only your own account (no sharing).</li>
+              </ul>
+              <p>
+                If you believe your account has been accessed by someone else, you should change your password immediately and notify school staff.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="acceptable-use">
+              <h2>3. Acceptable Use</h2>
+              <p>You agree that you will not:</p>
+              <ul>
+                <li>Attempt to bypass access restrictions, security controls, or page-level permissions.</li>
+                <li>Use the Portal to harass, threaten, defame, or impersonate others.</li>
+                <li>Upload, request, or share personal information (yours or someone else’s) beyond what is necessary for school use.</li>
+                <li>Use scripts, automation, or repeated requests to overload services (e.g., spamming CENTRAL).</li>
+                <li>Redistribute school-provided materials outside approved channels.</li>
+              </ul>
+
+              <p>
+                Misuse may result in access restrictions and/or referral to appropriate school processes.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="central">
+              <h2>4. CENTRAL Assistant</h2>
+              <p>
+                CENTRAL is designed to help with school-related questions (resources, navigation, assessment reminders, and general portal guidance).
+                It may not always be correct, complete, or up-to-date.
+              </p>
+
+              <ul>
+                <li><strong style="color: var(--girra-yellow); font-weight: 600;">Do not</strong> enter passwords, private contact details, or sensitive personal information.</li>
+                <li>CENTRAL responses should be verified against official school sources where required.</li>
+                <li>Use CENTRAL respectfully—no abuse, harassment, or inappropriate prompts.</li>
+              </ul>
+
+              <div class="callout">
+                <strong>Academic integrity:</strong> CENTRAL can support learning, but it must not be used to submit dishonest work or violate assessment rules.
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="resources">
+              <h2>5. Resources & Copyright</h2>
+              <p>
+                Resources provided through the Portal may include teacher-made content and third-party materials. You agree to:
+              </p>
+              <ul>
+                <li>Use resources for personal study and school purposes only.</li>
+                <li>Not repost, re-upload, or distribute materials publicly or to people outside authorised access.</li>
+                <li>Respect copyright and licensing requirements attached to specific files.</li>
+              </ul>
+
+              <p class="mini-note">
+                Some resources may be access-gated by year level for safety and curriculum reasons.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="privacy">
+              <h2>6. Privacy & Logging</h2>
+              <p>
+                To protect users and school resources, the Portal may log access and usage data for security and auditing.
+                This can include timestamps, resource views, and technical metadata (such as IP address and browser user-agent).
+              </p>
+              <ul>
+                <li>Logs are used for security, abuse prevention, and service improvement.</li>
+                <li>Access to logs is restricted to authorised administrators/staff where appropriate.</li>
+              </ul>
+
+              <p>
+                If you have concerns about data handling, contact the school via the details in the Contact section.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="security">
+              <h2>7. Security</h2>
+              <ul>
+                <li>Do not attempt to exploit vulnerabilities, guess passwords, or access other users’ data.</li>
+                <li>Report bugs responsibly to school staff (do not share them publicly).</li>
+                <li>Keep your device secure (lock screen, updated browser, avoid public shared logins).</li>
+              </ul>
+              <p>
+                Security incidents may be investigated, and access may be suspended to protect the community.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="availability">
+              <h2>8. Availability & Changes</h2>
+              <p>
+                The Portal is provided on an “as is” basis. Features may change, be updated, or temporarily unavailable for maintenance.
+                Terms may be updated over time; continued use after updates indicates acceptance of the revised Terms.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="contact">
+              <h2>9. Contact</h2>
+              <p>
+                For help, safety concerns, or to report an issue:
+              </p>
+              <ul>
+                <li>Phone (school hours): <strong style="color: var(--girra-yellow); font-weight: 600;">(02) 9896 3111</strong></li>
+                <li>Email: <a class="inline-link" href="mailto:girraween-h.school@det.nsw.edu.au">girraween-h.school@det.nsw.edu.au</a></li>
+                <li>In person: School Office (Mon–Fri, 8:45 AM – 3:10 PM)</li>
+              </ul>
+              <p class="mini-note">
+                If you ever feel unsafe or overwhelmed, please talk to a trusted adult or a school wellbeing staff member.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="acknowledgement">
+              <h2>10. Acknowledgement</h2>
+
+              <p>
+                By continuing to use the Portal, you confirm you understand and agree to these Terms.
+              </p>
+
+              <div class="terms-actions">
+                <label class="ack" for="ackBox">
+                  <input id="ackBox" type="checkbox" />
+                  <span>
+                    I have read and understood the Terms & Conditions, and I agree to follow school ICT policies while using the Portal.
+                  </span>
+                </label>
+
+                <div class="btn-row">
+                  <a class="btn" href="/home">← Back to Portal</a>
+                  <button id="acceptBtn" class="btn btn-primary" type="button" disabled>
+                    Accept & Continue
+                  </button>
+                </div>
+              </div>
+
+              <p class="mini-note">
+                Tip: If you want “Accept & Continue” to permanently save acceptance, you’ll store it in your database (e.g., users.accepted_terms = 1).
+              </p>
+            </section>
+
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Enable accept button only after checkbox is ticked
+    const ackBox = document.getElementById("ackBox");
+    const acceptBtn = document.getElementById("acceptBtn");
+
+    function setAcceptEnabled() {
+      acceptBtn.disabled = !ackBox.checked;
+    }
+
+    ackBox.addEventListener("change", setAcceptEnabled);
+    setAcceptEnabled();
+
+    // Front-end only: redirect back to home.
+    // If you want to actually "save acceptance", wire this button to a Flask route/API.
+    acceptBtn.addEventListener("click", async () => {
+      // Minimal behavior: return to portal.
+      window.location.href = "/home";
+    });
+  </script>
+</body>
+</html>
