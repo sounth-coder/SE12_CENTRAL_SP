@@ -6,11 +6,17 @@ from flask_bcrypt import Bcrypt
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+
+from flask import Flask, render_template, Response
+from barcode import Code39
+from barcode.writer import SVGWriter
+import io
 
 load_dotenv(override=True) # LOADS ENV FILE THAT IS HIDDEN FROM GITHUB.  -- OVERIDE NOT OPTIMAL - WILL FIND OUT WHAT'S WRONG SOON. 
 
@@ -132,12 +138,17 @@ def home():
 
 @app.route('/student-id')
 def student_id():
-    """Student ID page"""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
     username = session.get('name', 'Student')
-    return render_template('student_id.html', username=username)
+    student_id = session.get('user_id') 
+
+    return render_template(
+        'student_id.html',
+        username=username,
+        student_id=student_id
+    )
 
 @app.route('/resources')
 def resources():
@@ -345,8 +356,30 @@ Student Question:
     except Exception as e:
         return jsonify(error=str(e)), 500
 
+
+### Student Identification Bar-Code Generator 
+@app.route("/barcode/<student_id>")
+def barcode(student_id):
+    buffer = io.BytesIO()
+
+    code = Code39(
+        student_id,
+        writer=SVGWriter(),
+        add_checksum=False
+    )
+
+    code.write(buffer, options={
+        "write_text": True
+    })
+
+    svg = buffer.getvalue()
+    return Response(svg, mimetype="image/svg+xml")
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+
+
 
 #LOCAL FLASK OPERATION SCRIPT
 #if __name__ == "__main__":

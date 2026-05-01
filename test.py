@@ -1,6 +1,7 @@
-import os
-from dotenv import load_dotenv
+from barcode import Code39   ### THE CODE USED ON SCHOOL ID'S
 
-load_dotenv()
+data = '444628464'   
 
-print(os.getenv("GEMINI_API_KEY"))
+my_code = Code39(data, add_checksum=False)
+
+my_code.save('barcode')

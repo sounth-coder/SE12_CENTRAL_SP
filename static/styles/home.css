@@ -421,3 +421,23 @@
 .modal-hidden {
   display: none !important;
 }
+
+.student-barcode {
+    width: 260px;
+    height: auto;
+}
+
+.barcode-box {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    width: 320px;
+    height: auto;
+    overflow: visible;
+}
+
+.student-barcode {
+    display: block;
+    width: 100%;
+    height: auto;
+}
