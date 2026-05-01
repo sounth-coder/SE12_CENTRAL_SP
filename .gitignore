@@ -1,1 +1,21 @@
+### these files MUST be ignored to prevent cyber attacks and data leaks. 
+
 .env
+
+__pycache__/
+*.pyc
+
+venv/
+env/
+
+*.db
+
+.DS_Store
+Thumbs.db
+
+*.log
+
+.vscode/
+
+*.tmp
+*.swp
