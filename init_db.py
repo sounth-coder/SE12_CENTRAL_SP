@@ -69,15 +69,15 @@ CREATE TABLE IF NOT EXISTS resource_access (
 password = bcrypt.generate_password_hash("Password123!").decode()
 
 users = [
-    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10'),
-    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11'),
-    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12'),
-    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9'),
-    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10'),
-    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11'),
-    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12'),
-    ('Henry','Taylor','henry.taylor@education.nsw.gov.au','444628408', password,'8'),
-    ('Olivia','Adams','olivia.adams@education.nsw.gov.au','444628409', password,'9'),
+    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10'),                              #CHANGE 
+    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11'),                                    #CHANGE
+    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12'),                        #CHANGE
+    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9'),                               #CHANGE
+    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10'),                              #CHANGE
+    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11'),                              #CHANGE
+    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12'),                                    #CHANGE
+    ('Aarav','S','aarav.s@education.nsw.gov.au','444456345', password,'12'),
+    ('Raguram','P','raguram.ps@education.nsw.gov.au','443547291', password,'12'),
     ('Sountharikan','Thirukkumaran','sountharikan.thirukkumaran@education.nsw.gov.au','444628464', password,'12'),
     ('Mr','Patel','mr.patel@education.nsw.gov.au', None, password,'T'),
 ]
