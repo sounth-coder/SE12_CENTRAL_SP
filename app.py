@@ -7,7 +7,14 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 
-embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+#Faster loading times -- used to take ~ at least a minute to load. Very concerning. 
+embed_model = None
+
+def get_model():
+    global embed_model
+    if embed_model is None:
+        embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+    return embed_model
 
 import os
 from dotenv import load_dotenv
@@ -37,7 +44,7 @@ def search_documents(question, top_k=4):
     conn = sqlite3.connect("knowledge.db")
     cur = conn.cursor()
 
-    q_emb = embed_model.encode(question)
+    q_emb = get_model().encode(question)
 
     cur.execute("SELECT filename, content, embedding FROM documents")
     rows = cur.fetchall()
@@ -357,7 +364,7 @@ Student Question:
         return jsonify(error=str(e)), 500
 
 
-### Student Identification Bar-Code Generator 
+### STUDENT BAR_CODE GENERATOR 
 @app.route("/barcode/<student_id>")
 def barcode(student_id):
     buffer = io.BytesIO()
@@ -376,7 +383,7 @@ def barcode(student_id):
     return Response(svg, mimetype="image/svg+xml")
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
 
 
 

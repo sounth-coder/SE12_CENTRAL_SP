@@ -4,44 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/about.css') }}">
-  <title>About | CENTRAL</title>
+  <title>HSC Countdown</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
 </head>
 
 <body>
-  <header class="navbar">
-    <a href="home.html" class="brand">
-      <div class="brand-mark"></div>
-      CENTRAL
-    </a>
+  <header class="header">
+      <div class="container-wide">
+          <div class="header-content">
+              <!-- LOGO SECTION -->
+              <div class="logo-section">
+                  <img 
+                      src="{{ url_for('static', filename='assets/images/GirraExc/company_logo.png') }}" 
+                      alt="CENTRAL Logo"
+                      class="sidebar-logo-img"
+                  />
+              </div>
 
-    <nav class="nav-links">
-      <a href="home.html">Home</a>
-      <a href="subjects.html">Subjects</a>
-      <a href="assessment.html">Assessment Hub</a>
-      <a href="calendar.html">Calendar</a>
-      <a href="links.html">Links</a>
-      <a href="about.html" class="active">About</a>
-    </nav>
-
-    <div class="auth">
-      <a href="signin.html">Sign in</a>
-      <a href="register.html" class="register">Register</a>
-    </div>
+              
+              <!-- NAV BAR -->
+              <nav class="nav-links">
+                  <a href="/">Home</a>
+                  <a href="/">About</a>
+                  <a href="https://girraween-h.schools.nsw.gov.au/learning-and-support/assessments">Assessment Hub</a>
+                  <a href="https://girraween-h.sentral.com.au/s-Qedxel/webcal/calendar/4">Calendar</a>
+                  <a href="/about">HSC Countdown</a>
+              </nav>
+              
+              <!-- AUTH BUTTONS -->
+              <div class="auth-buttons">
+                  <a href="/login" class="btn-text">Sign in</a>
+                  <a href="/login" class="btn-register">Register</a>
+              </div>
+          </div>
+      </div>
   </header>
 
   <main>
     <section class="hero">
       <div>
-        <p class="kicker">Student platform</p>
         <h1>Built for the <span>HSC grind.</span></h1>
-        <p class="hero-copy">
-          CENTRAL keeps your HSC life organised: resources, assessment links, support, and a live countdown to the 2026 exams. No clutter. No excuses. Just the stuff students actually need.
-        </p>
 
         <!-- COUNTDOWN NOW UNDER TEXT -->
         <section class="countdown-card" aria-label="HSC countdown" style="margin-top:32px;">
           <h2>Countdown to HSC</h2>
-          <p>Time remaining until the first 2026 HSC exam. Lock in — every session stacks.</p>
+          <p>Time remaining until the first 2026 HSC exam. Lock in, every session stacks.</p>
 
           <div class="timer horizontal">
             <div class="time-box">
