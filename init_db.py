@@ -18,10 +18,22 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
+    student_number TEXT UNIQUE,
     password_hash TEXT NOT NULL,
     access_level TEXT NOT NULL CHECK(access_level IN ('7','8','9','10','11','12','T')),
     created_at TEXT DEFAULT (datetime('now'))
 );
+""")
+
+cur.execute("PRAGMA table_info(users)")
+user_columns = {column[1] for column in cur.fetchall()}
+if "student_number" not in user_columns:
+    cur.execute("ALTER TABLE users ADD COLUMN student_number TEXT")
+
+cur.execute("""
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_student_number
+ON users(student_number)
+WHERE student_number IS NOT NULL;
 """)
 
 
@@ -57,23 +69,51 @@ CREATE TABLE IF NOT EXISTS resource_access (
 password = bcrypt.generate_password_hash("Password123!").decode()
 
 users = [
-    ('Abby','Johnson','abby.johnson@girraween.nsw.edu.au', password,'10'),
-    ('Bob','Smith','skibidi', password,'11'),
-    ('Catherine','Davis','catherine.davis@girraween.nsw.edu.au', password,'12'),
-    ('Daniel','Brown','daniel.brown@girraween.nsw.edu.au', password,'9'),
-    ('Eva','Martinez','eva.martinez@girraween.nsw.edu.au', password,'10'),
-    ('Frank','Wilson','frank.wilson@girraween.nsw.edu.au', password,'11'),
-    ('Grace','Lee','grace.lee@girraween.nsw.edu.au', password,'12'),
-    ('Henry','Taylor','henry.taylor@girraween.nsw.edu.au', password,'8'),
-    ('Olivia','Adams','olivia.adams@girraween.nsw.edu.au', password,'9'),
-    ('Mr','Patel','r.patel@girraween.nsw.edu.au', password,'T'),
+    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10'),
+    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11'),
+    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12'),
+    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9'),
+    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10'),
+    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11'),
+    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12'),
+    ('Henry','Taylor','henry.taylor@education.nsw.gov.au','444628408', password,'8'),
+    ('Olivia','Adams','olivia.adams@education.nsw.gov.au','444628409', password,'9'),
+    ('Sountharikan','Thirukkumaran','sountharikan.thirukkumaran@education.nsw.gov.au','444628464', password,'12'),
+    ('Mr','Patel','mr.patel@education.nsw.gov.au', None, password,'T'),
 ]
 
-cur.executemany("""
-INSERT OR IGNORE INTO users
-(first_name,last_name,email,password_hash,access_level)
-VALUES (?,?,?,?,?)
-""", users)
+for user in users:
+    first_name, last_name, email, student_number, password_hash, access_level = user
+    cur.execute("""
+        SELECT id FROM users
+        WHERE lower(first_name) = lower(?) AND lower(last_name) = lower(?)
+    """, (first_name, last_name))
+    existing_user = cur.fetchone()
+
+    if existing_user:
+        cur.execute("""
+            UPDATE users
+            SET email = ?,
+                student_number = ?,
+                password_hash = ?,
+                access_level = ?
+            WHERE id = ?
+        """, (email, student_number, password_hash, access_level, existing_user[0]))
+    else:
+        cur.execute("""
+            INSERT INTO users
+            (first_name,last_name,email,student_number,password_hash,access_level)
+            VALUES (?,?,?,?,?,?)
+        """, user)
+
+for first_name, last_name, email, student_number, _, _ in users:
+    cur.execute("""
+        DELETE FROM users
+        WHERE lower(first_name) = lower(?)
+          AND lower(last_name) = lower(?)
+          AND email <> ?
+          AND (student_number IS NULL OR student_number <> ?)
+    """, (first_name, last_name, email, student_number))
 
 
 # ADD RESOURCES TO DB (PLACE HOLDER DRIVE LINKS FOR NOW)

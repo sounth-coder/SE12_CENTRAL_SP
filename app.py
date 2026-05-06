@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
-from datetime import timedelta
+from datetime import date, timedelta
 import sqlite3
 from flask_bcrypt import Bcrypt
 import numpy as np
@@ -73,6 +73,27 @@ def get_db():
 
 LEVEL_ORDER = {'7':7,'8':8,'9':9,'10':10,'11':11,'12':12,'T':99}
 
+## DYNAMIC SCHOOL WEEK DISPLAYER! 
+NSW_SCHOOL_TERMS = {
+    2026: [
+        (1, date(2026, 2, 2), date(2026, 4, 2)),
+        (2, date(2026, 4, 22), date(2026, 7, 3)),
+        (3, date(2026, 7, 21), date(2026, 9, 25)),
+        (4, date(2026, 10, 13), date(2026, 12, 17)),
+    ],
+}
+
+def get_school_term_label(today=None):
+    today = today or date.today()
+    terms = NSW_SCHOOL_TERMS.get(today.year, [])
+
+    for term_number, start_date, end_date in terms:
+        if start_date <= today <= end_date:
+            week_number = ((today - start_date).days // 7) + 1
+            return f"Term {term_number}, Week {week_number}, {today.year}"
+
+    return f"School Holidays, {today.year}"
+
 def can_access(user_level: str, min_level: str) -> bool:
     return LEVEL_ORDER.get(user_level, 0) >= LEVEL_ORDER.get(min_level, 0)
 
@@ -123,8 +144,10 @@ def login():
             session['logged_in'] = True
             session['user_id'] = user['id']
             session['email'] = user['email']
+            session['student_number'] = user['student_number']
             session['access_level'] = user['access_level']
             session['name'] = user['first_name']
+            session['full_name'] = f"{user['first_name']} {user['last_name']}"
 
             return redirect(url_for('home'))  
 
@@ -139,7 +162,8 @@ def home():
 
     return render_template(
         'home.html',
-        username=session.get('name', 'Student')
+        username=session.get('name', 'Student'),
+        school_term=get_school_term_label()
     )
 
 
@@ -148,13 +172,16 @@ def student_id():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    username = session.get('name', 'Student')
-    student_id = session.get('user_id') 
+    username = session.get('full_name', session.get('name', 'Student'))
+    student_number = session.get('student_number') or str(session.get('user_id'))
+    year_level = session.get('access_level', '7')
 
     return render_template(
         'student_id.html',
         username=username,
-        student_id=student_id
+        student_id=student_number,
+        email=session.get('email', ''),
+        year_level=year_level
     )
 
 @app.route('/resources')

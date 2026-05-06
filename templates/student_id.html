@@ -47,13 +47,13 @@
                                 <div class="info-item">
                                     <p class="info-label">Student ID</p>
                                     <p class="info-value highlight">
-                                        GHS-2024-{{ student_id }}
+                                        {{ student_id }}
                                     </p>
                                 </div>
                                 
                                 <div class="info-item">
                                     <p class="info-label">Year Level</p>
-                                    <p class="info-value">Year 12</p>
+                                    <p class="info-value">Year {{ year_level }}</p>
                                 </div>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                         <div class="id-qr">
                             <div class="barcode-box">
                                 <img 
-                                    src="{{ url_for('barcode', student_id='444628464') }}"
+                                    src="{{ url_for('barcode', student_id=student_id) }}"
                                     alt="Student Barcode"
                                     class="student-barcode"
                                 >
@@ -82,7 +82,7 @@
                             <svg class="footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
-                            <span>{{ username|lower }}@student.girra.nsw.edu.au</span>
+                            <span>{{ email }}</span>
                         </div>
                     </div>
                 </div>
