@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/login.css') }}">
+</head>
+<body>
+    <div class="background-image"></div>
+
+    <a href="/" class="back-button">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        <span>Back</span>
+    </a>
+
+    <div class="login-container register-container">
+        <div class="login-card">
+            {% if error %}
+            <div class="form-alert form-alert-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="logo-circle">
+                <span>GHS</span>
+            </div>
+
+            <h1 class="login-title">Create Account</h1>
+            <p class="login-subtitle">Register for Girra Student Portal</p>
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input
+                            type="text"
+                            id="first_name"
+                            name="first_name"
+                            class="form-input"
+                            placeholder="Enter your first name"
+                            value="{{ form.get('first_name', '') if form else '' }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input
+                            type="text"
+                            id="last_name"
+                            name="last_name"
+                            class="form-input"
+                            placeholder="Enter your last name"
+                            value="{{ form.get('last_name', '') if form else '' }}"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="student_number">Barcode Number <span class="optional-label">Optional</span></label>
+                    <input
+                        type="text"
+                        id="student_number"
+                        name="student_number"
+                        class="form-input"
+                        placeholder="Only needed if you want GirraDigitalID"
+                        value="{{ form.get('student_number', '') if form else '' }}"
+                    >
+                    <p class="field-note">
+                        You can leave this blank if you do not want to use the digital ID feature.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">School Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-input"
+                        placeholder="your.email@education.nsw.gov.au"
+                        value="{{ form.get('email', '') if form else '' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-input"
+                            placeholder="At least 8 characters"
+                            minlength="8"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            class="form-input"
+                            placeholder="Re-enter password"
+                            minlength="8"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="security-section">
+                    <h2>Security Questions</h2>
+                    <p>These help verify your identity if you need account support.</p>
+
+                    {% for question in questions %}
+                    <div class="form-group">
+                        <label for="security_{{ question.key }}">{{ question.text }}</label>
+                        <input
+                            type="text"
+                            id="security_{{ question.key }}"
+                            name="security_{{ question.key }}"
+                            class="form-input"
+                            placeholder="Enter your answer"
+                            value="{{ form.get('security_' ~ question.key, '') if form else '' }}"
+                            required
+                        >
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <label class="terms-ack" for="terms_ack">
+                    <input
+                        type="checkbox"
+                        id="terms_ack"
+                        name="terms_ack"
+                        required
+                    >
+                    <span>
+                        I agree to follow the portal's
+                        <a href="{{ url_for('terms') }}">Terms & Conditions</a>
+                        and understand that barcode details are only required for GirraDigitalID.
+                    </span>
+                </label>
+
+                <button type="submit" class="btn-submit">Create Account</button>
+            </form>
+
+            <p class="login-footer">
+                Already registered? <a class="inline-auth-link" href="{{ url_for('login') }}">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/register.js') }}"></script>
+</body>
+</html>

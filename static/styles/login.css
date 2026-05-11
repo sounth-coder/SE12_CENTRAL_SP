@@ -21,8 +21,8 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background-color: rgba(51, 47, 47, 0.85);
-    backdrop-filter: blur(3px);
+    background-color: rgba(20, 18, 18, 0.58);
+    backdrop-filter: blur(1.5px);
 }
 
 .background-image {
@@ -66,13 +66,17 @@ body {
     padding: 1.5rem;
 }
 
+.register-container {
+    max-width: 42rem;
+}
+
 .login-card {
     border-radius: var(--radius-3xl);
     padding: 2.5rem;
-    background: linear-gradient(135deg, rgba(196, 169, 98, 0.15) 0%, rgba(196, 169, 98, 0.10) 100%);
+    background: linear-gradient(135deg, rgba(14, 14, 14, 0.9) 0%, rgba(29, 25, 17, 0.88) 100%);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(196, 169, 98, 0.25);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 222, 89, 0.38);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.62);
 }
 
 /* Logo */
@@ -105,7 +109,7 @@ body {
 
 .login-subtitle {
     text-align: center;
-    color: var(--girra-text-muted);
+    color: #d8d8d8;
     margin-bottom: 2rem;
 }
 
@@ -114,33 +118,118 @@ body {
     margin-bottom: 1.25rem;
 }
 
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
 .form-group label {
     display: block;
-    color: var(--girra-text-muted);
+    color: #f0f0f0;
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
     letter-spacing: 0.02em;
+}
+
+.optional-label {
+    color: var(--girra-yellow);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.35rem;
+}
+
+.field-note {
+    color: #cfcfcf;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+    line-height: 1.4;
 }
 
 .form-input {
     width: 100%;
     padding: 0.875rem 1rem;
     border-radius: var(--radius-xl);
-    background-color: rgba(26, 26, 26, 0.5);
-    border: 1px solid var(--girra-border);
-    color: var(--girra-text);
+    background-color: rgba(0, 0, 0, 0.62);
+    border: 1px solid rgba(255, 222, 89, 0.22);
+    color: #ffffff;
     font-size: 1rem;
     transition: all var(--transition-normal);
 }
 
 .form-input::placeholder {
-    color: rgba(160, 160, 160, 0.5);
+    color: rgba(230, 230, 230, 0.68);
 }
 
 .form-input:focus {
     outline: none;
     border-color: rgba(196, 169, 98, 0.5);
     box-shadow: 0 0 0 3px rgba(196, 169, 98, 0.1);
+}
+
+.form-alert {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-alert-error {
+    color: #ffb3b3;
+    background: rgba(255, 77, 77, 0.1);
+    border: 1px solid rgba(255, 77, 77, 0.25);
+}
+
+.security-section {
+    margin: 1.5rem 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(196, 169, 98, 0.18);
+}
+
+.security-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.security-section p {
+    color: #d0d0d0;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.inline-auth-link {
+    color: var(--girra-yellow);
+    font-weight: 600;
+}
+
+.inline-auth-link:hover {
+    color: rgba(196, 169, 98, 0.85);
+}
+
+.terms-ack {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    margin: 0.5rem 0 1.25rem;
+    color: #d6d6d6;
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+.terms-ack input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    accent-color: var(--girra-yellow);
+}
+
+.terms-ack a {
+    color: var(--girra-yellow);
+    font-weight: 600;
+}
+
+.terms-ack a:hover {
+    color: rgba(196, 169, 98, 0.85);
 }
 
 /* Form Options */
@@ -167,7 +256,7 @@ body {
 
 .checkbox-label span {
     font-size: 0.875rem;
-    color: var(--girra-text-muted);
+    color: #d6d6d6;
 }
 
 .link-button {
@@ -216,7 +305,7 @@ body {
     border-radius: var(--radius-xl);
     background-color: var(--girra-bg-lighter);
     border: 1px solid var(--girra-border);
-    color: var(--girra-text-muted);
+    color: #e0e0e0;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -234,7 +323,7 @@ body {
 /* Footer */
 .login-footer {
     text-align: center;
-    color: var(--girra-text-muted);
+    color: #d0d0d0;
     font-size: 0.75rem;
     margin-top: 2rem;
 }
@@ -243,6 +332,11 @@ body {
 @media (max-width: 640px) {
     .login-card {
         padding: 2rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
     
     .back-button {

@@ -36,6 +36,19 @@ ON users(student_number)
 WHERE student_number IS NOT NULL;
 """)
 
+cur.execute("""
+CREATE TABLE IF NOT EXISTS user_security_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    question_key TEXT NOT NULL,
+    question_text TEXT NOT NULL,
+    answer_hash TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    UNIQUE(user_id, question_key)
+);
+""")
+
 
 # RESOURCES TABLE
 cur.execute("""
@@ -69,13 +82,13 @@ CREATE TABLE IF NOT EXISTS resource_access (
 password = bcrypt.generate_password_hash("Password123!").decode()
 
 users = [
-    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10'),                              #CHANGE 
-    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11'),                                    #CHANGE
-    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12'),                        #CHANGE
-    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9'),                               #CHANGE
-    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10'),                              #CHANGE
-    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11'),                              #CHANGE
-    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12'),                                    #CHANGE
+    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10'),                              #CHANGE - NOT REAL DATA
+    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11'),                                    #CHANGE - NOT REAL DATA
+    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12'),                        #CHANGE - NOT REAL DATA
+    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9'),                               #CHANGE - NOT REAL DATA
+    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10'),                              #CHANGE - NOT REAL DATA
+    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11'),                              #CHANGE - NOT REAL DATA
+    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12'),                                    #CHANGE - NOT REAL DATA
     ('Aarav','S','aarav.s@education.nsw.gov.au','444456345', password,'12'),
     ('Raguram','P','raguram.ps@education.nsw.gov.au','443547291', password,'12'),
     ('Sountharikan','Thirukkumaran','sountharikan.thirukkumaran@education.nsw.gov.au','444628464', password,'12'),

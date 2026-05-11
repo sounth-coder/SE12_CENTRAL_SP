@@ -71,6 +71,39 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def ensure_security_questions_table():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS user_security_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            question_key TEXT NOT NULL,
+            question_text TEXT NOT NULL,
+            answer_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            UNIQUE(user_id, question_key)
+        );
+    """)
+    conn.commit()
+    conn.close()
+
+SECURITY_QUESTIONS = [
+    {
+        "key": "previous_school",
+        "text": "What was the first school you attended before Girraween?"
+    },
+    {
+        "key": "high_school_street",
+        "text": "What was the name of the street you lived on when you started high school?"
+    },
+    {
+        "key": "childhood_item",
+        "text": "What was the name of your first pet or favourite childhood item?"
+    },
+]
+
 LEVEL_ORDER = {'7':7,'8':8,'9':9,'10':10,'11':11,'12':12,'T':99}
 
 ## DYNAMIC SCHOOL WEEK DISPLAYER! 
@@ -154,6 +187,82 @@ def login():
         return render_template('login.html', error="Invalid email or password")
 
     return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    ensure_security_questions_table()
+
+    if request.method == 'POST':
+        first_name = (request.form.get('first_name') or '').strip()
+        last_name = (request.form.get('last_name') or '').strip()
+        student_number = (request.form.get('student_number') or '').strip() or None
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
+        confirm_password = request.form.get('confirm_password') or ''
+        answers = {
+            question["key"]: (request.form.get(f"security_{question['key']}") or '').strip()
+            for question in SECURITY_QUESTIONS
+        }
+
+        if not all([first_name, last_name, email, password, confirm_password]) or not all(answers.values()):
+            return render_template(
+                'register.html',
+                error="Please complete all registration fields.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
+        if password != confirm_password:
+            return render_template(
+                'register.html',
+                error="Passwords do not match.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
+        if len(password) < 8:
+            return render_template(
+                'register.html',
+                error="Password must be at least 8 characters long.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
+        password_hash = bcrypt.generate_password_hash(password).decode()
+
+        conn = get_db()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                INSERT INTO users
+                (first_name, last_name, email, student_number, password_hash, access_level)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (first_name, last_name, email, student_number, password_hash, '7'))
+            user_id = cur.lastrowid
+
+            for question in SECURITY_QUESTIONS:
+                answer_hash = bcrypt.generate_password_hash(answers[question["key"]].lower()).decode()
+                cur.execute("""
+                    INSERT INTO user_security_questions
+                    (user_id, question_key, question_text, answer_hash)
+                    VALUES (?, ?, ?, ?)
+                """, (user_id, question["key"], question["text"], answer_hash))
+
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.rollback()
+            return render_template(
+                'register.html',
+                error="That email address or barcode number is already registered.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+        finally:
+            conn.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html', questions=SECURITY_QUESTIONS)
 
 @app.route('/home')
 def home():
