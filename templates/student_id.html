@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">    <!-- PLACE HOLDER STUDENT DIGITAL ID - WILL BE BASIC FOR NOW -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,9 +16,10 @@
             <div class="page-container">
                 <h1 class="page-title">Student ID</h1>
                 
-                <!-- DIGI ID -->
+                <!-- Digital ID -->
                 <div class="id-card">
-                    <!-- CARD HEDER -->
+                    <div class="id-card-glow" aria-hidden="true"></div>
+
                     <div class="id-header">
                         <div class="id-logo">
                             <div class="logo-box-large">
@@ -29,36 +30,47 @@
                                 <p>Student Identification</p>
                             </div>
                         </div>
+                        <div class="id-status">
+                            <span class="status-dot"></span>
+                            Active
+                        </div>
                     </div>
 
-                    <!-- STUDENT INFO  -->
+                    <div class="id-strip">
+                        <span>GirraDigitalID</span>
+                        <span>2026</span>
+                    </div>
+
                     <div class="id-content">
-                        <div class="id-info">
+                        <div class="id-profile">
                             <div class="id-avatar">
                                 <span>{{ username[0]|upper }}</span>
                             </div>
-                            
-                            <div class="info-group">
-                                <div class="info-item">
-                                    <p class="info-label">Full Name</p>
-                                    <p class="info-value">{{ username }}</p>
-                                </div>
-                                
-                                <div class="info-item">
-                                    <p class="info-label">Student ID</p>
-                                    <p class="info-value highlight">
-                                        {{ student_id }}
-                                    </p>
-                                </div>
-                                
-                                <div class="info-item">
-                                    <p class="info-label">Year Level</p>
-                                    <p class="info-value">Year {{ year_level }}</p>
-                                </div>
+                            <div>
+                                <p class="profile-label">GSP USER</p>
+                                <h3>{{ username }}</h3>
+                                <p class="profile-email">{{ email }}</p>
                             </div>
                         </div>
 
-                        <div class="id-qr">
+                        <div class="info-group">
+                            <div class="info-item">
+                                <p class="info-label">Student ID</p>
+                                <p class="info-value highlight">{{ student_id }}</p>
+                            </div>
+
+                            <div class="info-item">
+                                <p class="info-label">Year</p>
+                                <p class="info-value">Year {{ year_level }}</p>
+                            </div>
+
+                            <div class="info-item">
+                                <p class="info-label">Role</p>
+                                <p class="info-value">{{ role_label }}</p>
+                            </div>
+                        </div>
+
+                        <div class="id-qr" aria-label="Student barcode">
                             <div class="barcode-box">
                                 <img 
                                     src="{{ url_for('barcode', student_id=student_id) }}"
@@ -66,11 +78,10 @@
                                     class="student-barcode"
                                 >
                             </div>
-                            <p>Scan barcode for verification</p>
+                            <p>Scan at kiosk for ID verification</p>
                         </div>
                     </div>
 
-                    <!-- ADDITIONAL INFO -->
                     <div class="id-footer">
                         <div class="footer-item">
                             <svg class="footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,32 +89,26 @@
                             </svg>
                             <span>Valid: 2026 Academic Year</span>
                         </div>
-                        <div class="footer-item">
-                            <svg class="footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            <span>{{ email }}</span>
-                        </div>
                     </div>
                 </div>
 
                 <!-- INSTRUCTIONS -->
                 <div class="info-panel">
-                    <h3>Terms & Privacy of GirraDigitalID</h3> <br> 
-                    <p> <li> 
-                        GirraDigitalID only uses low security risk student information needed to
-                        display a digital version of your student ID. This may include your school
-                        email address, first name, optional last name, and the student ID number
-                        shown below the barcode on your physical card. <br> <br> 
-                    </p> </li>
-                    <p> <li> 
-                        Highly sensitive school records, assessment data, NESA values, or other
-                        critical student information are not stored by this website. <br> <br> 
-                    </p> </li>
-                    <p> <li> 
-                        The digital ID is provided as a convenience feature to help students sign
-                        off at kiosks when they have forgotten their physical student ID. <br> <br> <br>
-                    </p> </li>
+                    <h3>Terms & Privacy of GirraDigitalID</h3>
+                    <ul>
+                        <li>
+                            GirraDigitalID only uses low security risk student information needed to
+                            display a digital version of your student ID.
+                        </li>
+                        <li>
+                            Highly sensitive school records, assessment data, NESA values, or other
+                            critical student information are not stored by this website.
+                        </li>
+                        <li>
+                            The digital ID is provided as a convenience feature to help students sign
+                            off at kiosks when they have forgotten their physical student ID.
+                        </li>
+                    </ul>
                     <a class="btn-secondary" href="{{ url_for('terms') }}">View Full Terms & Conditions</a>
                 </div>
             </div>

@@ -16,4 +16,26 @@ document.addEventListener('DOMContentLoaded', function() {
  
     const sidebar = document.getElementById('sidebar');
 
+    const composeToggles = document.querySelectorAll('[data-compose-toggle]');
+
+    composeToggles.forEach(toggle => {
+        const panel = document.getElementById(toggle.dataset.composeToggle);
+        if (!panel) {
+            return;
+        }
+
+        toggle.addEventListener('click', () => {
+            const isOpening = panel.hasAttribute('hidden');
+            panel.toggleAttribute('hidden', !isOpening);
+            toggle.setAttribute('aria-expanded', String(isOpening));
+
+            if (isOpening) {
+                const firstInput = panel.querySelector('input:not([type="hidden"]), textarea, select');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }
+        });
+    });
+
 });

@@ -14,21 +14,70 @@
 
         <main class="main-content">
             <div class="page-container">
-                <h1 class="page-title">Girra News</h1> <!-- PLACEHOLDERS FOR NOW -->
-                
-                <div class="id-card" style="margin-bottom: 1.5rem;">
-                    <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; background: rgba(196, 169, 98, 0.1); color: var(--girra-yellow); font-size: 0.75rem; margin-bottom: 0.75rem;">Academics</span>
-                    <h3 style="margin-bottom: 0.75rem;">Girraween Students Excel at State Mathematics Competition</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem; font-size: 0.875rem;">January 18, 2026</p>
-                    <p style="color: var(--girra-text-muted);">Our students achieved outstanding results at the recent State Mathematics Competition, with 5 gold medals and 12 distinctions.</p>
+                <div class="page-header">
+                    <h1 class="page-title">Girra News</h1>
+                    {% if can_publish %}
+                    <button class="new-content-button" type="button" data-compose-toggle="news-form" aria-expanded="false">
+                        <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L9.38 17.273 5.75 18.25l.977-3.63L16.862 4.487z"/>
+                        </svg>
+                        <span>New Girra News</span>
+                    </button>
+                    {% endif %}
                 </div>
 
-                <div class="id-card" style="margin-bottom: 1.5rem;">
-                    <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; background: rgba(196, 169, 98, 0.1); color: var(--girra-yellow); font-size: 0.75rem; margin-bottom: 0.75rem;">Facilities</span>
-                    <h3 style="margin-bottom: 0.75rem;">New STEM Lab Opening in Term 2</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem; font-size: 0.875rem;">January 15, 2026</p>
-                    <p style="color: var(--girra-text-muted);">The school is proud to announce the opening of a state-of-the-art STEM laboratory (sponsored by none other than Sountharikan.T), featuring cutting-edge equipment and collaborative spaces.</p>
+                {% if can_publish %}
+                <div class="info-panel teacher-panel compose-panel" id="news-form" hidden>
+                    <h3>Add Girra News</h3>
+                    <form class="portal-form" method="post" action="{{ url_for('teacher_add_content') }}">
+                        <input type="hidden" name="content_type" value="news">
+                        <div class="form-grid-2">
+                            <label>Headline
+                                <input name="title" required>
+                            </label>
+                            <label>Category
+                                <input name="category" placeholder="Academics, Facilities, Community">
+                            </label>
+                        </div>
+                        <label>Story
+                            <textarea name="body" rows="6" required></textarea>
+                        </label>
+                        <button class="portal-button" type="submit">Publish news</button>
+                    </form>
                 </div>
+                {% endif %}
+
+                {% for item in items %}
+                <div class="id-card content-card">
+                    {% if item.category %}
+                    <span class="content-badge">{{ item.category }}</span>
+                    {% endif %}
+                    <div class="content-card-header">
+                        <h3>{{ item.title }}</h3>
+                        {% if is_admin %}
+                        <form
+                            class="inline-form"
+                            method="post"
+                            action="{{ url_for('admin_delete_content', content_id=item.id) }}"
+                            onsubmit="return confirm('Are you sure you want to delete this Girra news post?');"
+                        >
+                            <button class="resource-delete-button" type="submit" aria-label="Delete {{ item.title }}">
+                                Delete
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <p class="content-meta">
+                        {{ item.created_at }}
+                        {% if item.first_name %} &middot; {{ item.first_name }} {{ item.last_name }}{% endif %}
+                    </p>
+                    <p>{{ item.body }}</p>
+                </div>
+                {% else %}
+                <div class="info-panel">
+                    <p class="muted-text">No Girra news has been published yet.</p>
+                </div>
+                {% endfor %}
             </div>
         </main>
     </div>

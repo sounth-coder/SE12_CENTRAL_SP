@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Announcements - Girraween Student Portal</title>  <!-- RIVAL TO SENTRAL ANNOUNCEMENTS -->
+    <title>Announcements - Girraween Student Portal</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
@@ -14,31 +14,81 @@
 
         <main class="main-content">
             <div class="page-container">
-                <h1 class="page-title">Announcements</h1>
-                
-                <div class="id-card" style="margin-bottom: 1rem;">
-                    <h3 style="margin-bottom: 0.5rem;">Term 1 Assessment Schedule Released</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 15, 2026 • Academic</p>
-                    <p style="color: var(--girra-text-muted);">The assessment schedule for Term 1 is now available. Please check your Google Classroom for detailed information.</p>
+                <div class="page-header">
+                    <h1 class="page-title">Announcements</h1>
+                    {% if can_publish %}
+                    <button 
+                        class="new-content-button"
+                        type="button"
+                        data-compose-toggle="announcement-form"
+                        aria-expanded="false"
+                    >
+                        <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L9.38 17.273 5.75 18.25l.977-3.63L16.862 4.487z"/>
+                        </svg>
+
+                        <span>New Announcement</span>
+                    </button>
+                    <!-- <button class="new-content-button" type="button" data-compose-toggle="announcement-form" aria-expanded="false">
+                        <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L9.38 17.273 5.75 18.25l.977-3.63L16.862 4.487z"/>
+                        </svg>
+                        <span>New announcement</span>
+                    </button> -->
+                    {% endif %}
                 </div>
 
-                <div class="id-card" style="margin-bottom: 1rem;">
-                    <h3 style="margin-bottom: 0.5rem;">School Photo Day - February 5th</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 12, 2026 • Events</p>
-                    <p style="color: var(--girra-text-muted);">School photos will be taken on February 5th. Please ensure you are in full school uniform.</p>
+                {% if can_publish %}
+                <div class="info-panel teacher-panel compose-panel" id="announcement-form" hidden>
+                    <h3>Add Announcement</h3>
+                    <form class="portal-form" method="post" action="{{ url_for('teacher_add_content') }}">
+                        <input type="hidden" name="content_type" value="announcement">
+                        <div class="form-grid-2">
+                            <label>Title
+                                <input name="title" required>
+                            </label>
+                            <label>Category
+                                <input name="category" placeholder="Academic, Events, Sport">
+                            </label>
+                        </div>
+                        <label>Message
+                            <textarea name="body" rows="5" required></textarea>
+                        </label>
+                        <button class="portal-button" type="submit">Publish announcement</button>
+                    </form>
                 </div>
+                {% endif %}
 
-                <div class="info-panel" style="margin-bottom: 1rem;">
-                    <h3 style="margin-bottom: 0.5rem;">Sports Awards Dress Code</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 10, 2026 • Sports</p>
-                    <p style="color: var(--girra-text-muted);">Please wear your formal school uniform on the 16th of February, including blazers and ties.</p>
+                {% for item in items %}
+                <div class="id-card content-card">
+                    <div class="content-card-header">
+                        <h3>{{ item.title }}</h3>
+                        {% if is_admin %}
+                        <form 
+                            class="inline-form"
+                            method="post"
+                            action="{{ url_for('admin_delete_content', content_id=item.id) }}"
+                            onsubmit="return confirm('Are you sure you want to delete this announcement?');"
+                        >
+                            <button class="resource-delete-button" type="submit" aria-label="Delete {{ item.title }}">
+                                Delete
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <p class="content-meta">
+                        {{ item.created_at }}
+                        {% if item.category %} &middot; {{ item.category }}{% endif %}
+                        {% if item.first_name %} &middot; {{ item.first_name }} {{ item.last_name }}{% endif %}
+                    </p>
+                    <p>{{ item.body }}</p>
                 </div>
-
+                {% else %}
                 <div class="info-panel">
-                    <h3 style="margin-bottom: 0.5rem;">Library Extended Hours</h3>
-                    <p style="color: var(--girra-text-muted); margin-bottom: 0.5rem;">January 8, 2026 • Services</p>
-                    <p style="color: var(--girra-text-muted);">The library will be open until 6 PM on Wednesdays for Year 12 students during Term 1.</p>
+                    <p class="muted-text">No announcements have been published yet.</p>
                 </div>
+                {% endfor %}
             </div>
         </main>
     </div>

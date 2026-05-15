@@ -37,6 +37,14 @@
                 </svg>
                 <span class="nav-label">Girra Chat</span>
             </a>
+            {% if session.get('role') == 'admin' %}
+            <a href="/admin" class="nav-item">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.105.895-2 2-2h3a2 2 0 012 2v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7a2 2 0 012-2h3m2 2V7a4 4 0 10-8 0v4"/>
+                </svg>
+                <span class="nav-label">Admin</span>
+            </a>
+            {% endif %}
 
             <div class="nav-header">GIRRA INFO</div>
             <a href="/announcements" class="nav-item">

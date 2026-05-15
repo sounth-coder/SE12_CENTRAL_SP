@@ -49,6 +49,14 @@
                         </svg>
                         <span class="nav-label">Girra Chat </span>
                     </a>
+                    {% if is_admin %}
+                    <a href="/admin" class="nav-item" data-page="admin">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.105.895-2 2-2h3a2 2 0 012 2v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7a2 2 0 012-2h3m2 2V7a4 4 0 10-8 0v4"/>
+                        </svg>
+                        <span class="nav-label">Admin</span>
+                    </a>
+                    {% endif %}
 
                     <div class="nav-header">GIRRA INFO</div>
                     <a href="/announcements" class="nav-item" data-page="announcements">
@@ -132,6 +140,34 @@
                         <p>Chat with our advanced AI</p>
                     </div>
                 </a>
+
+                {% if can_publish %}
+                <a href="/announcements" class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Publishing</h3>
+                        <p>Add announcements and Girra news posts</p>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if is_admin %}
+                <a href="/admin" class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Admin Console</h3>
+                        <p>Manage members and view access logs</p>
+                    </div>
+                </a>
+                {% endif %}
             </div>
 
             <!-- ANNOUNCEMENT PANEL -->
@@ -142,7 +178,16 @@
                     </svg>
                     <h2>Announcements</h2>
                 </div>
+                {% for item in announcements %}
+                <div class="resource-row">
+                    <div>
+                        <p class="resource-title">{{ item.title }}</p>
+                        <p class="resource-meta">{{ item.created_at }}{% if item.category %} · {{ item.category }}{% endif %}</p>
+                    </div>
+                </div>
+                {% else %}
                 <p class="panel-empty">Currently there are no announcements available</p>
+                {% endfor %}
             </div>
         </main>
     </div>

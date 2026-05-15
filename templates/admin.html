@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- ADMIN PAGE - INFORMATION REGARDING RESOURCE USAGE AND ADMINISTRATIVE FUNCTIONS  HERE-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container admin-page">
+                <h1 class="page-title">Admin Console</h1>
+
+                <div class="info-panel">
+                    <h3>Add Member</h3>
+                    <form class="portal-form" method="post">
+                        <input type="hidden" name="action" value="add_member">
+                        <div class="form-grid-2">
+                            <label>First name
+                                <input name="first_name" required>
+                            </label>
+                            <label>Last name
+                                <input name="last_name" required>
+                            </label>
+                            <label>Email
+                                <input name="email" type="email" required>
+                            </label>
+                            <label>Girra ID
+                                <input name="student_number">
+                            </label>
+                            <label>Access level
+                                <select name="access_level">
+                                    {% for level in levels %}
+                                    <option value="{{ level }}">{{ level }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label>Role
+                                <select name="role">
+                                    <option value="student">student</option>
+                                    <option value="teacher">teacher</option>
+                                    <option value="admin">admin</option>
+                                </select>
+                            </label>
+                            <label>Password
+                                <input name="password" value="Password123!">
+                            </label>
+                        </div>
+                        <button class="portal-button" type="submit">Add member</button>
+                    </form>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Members</h3>
+                    <div class="table-scroll">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Girra ID</th>
+                                    <th>Level</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                <tr>
+                                    <td>{{ member.first_name }} {{ member.last_name }}</td>
+                                    <td>{{ member.email }}</td>
+                                    <td colspan="4">
+                                        <form class="table-form" method="post">
+                                            <input type="hidden" name="action" value="update_member">
+                                            <input type="hidden" name="member_id" value="{{ member.id }}">
+                                            <input name="student_number" value="{{ member.student_number or '' }}" placeholder="Girra ID">
+                                            <select name="access_level">
+                                                {% for level in levels %}
+                                                <option value="{{ level }}" {% if member.access_level == level %}selected{% endif %}>{{ level }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <select name="role">
+                                                {% for role in ['student','teacher','admin'] %}
+                                                <option value="{{ role }}" {% if member.role == role %}selected{% endif %}>{{ role }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button class="small-button" type="submit">Save</button>
+                                        </form>
+                                        <form class="inline-form" method="post">
+                                            <input type="hidden" name="action" value="remove_member">
+                                            <input type="hidden" name="member_id" value="{{ member.id }}">
+                                            <button class="small-button danger" type="submit">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Resource Opens</h3>
+                    <div class="table-scroll">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>When</th>
+                                    <th>Member</th>
+                                    <th>Resource</th>
+                                    <th>IP</th>
+                                    <th>User agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in access_logs %}
+                                <tr>
+                                    <td>{{ log.accessed_at }}</td>
+                                    <td>{{ log.first_name }} {{ log.last_name }}<br><span>{{ log.email }}</span></td>
+                                    <td>{{ log.title }}</td>
+                                    <td>{{ log.ip_address }}</td>
+                                    <td>{{ log.user_agent }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5">No resource opens logged yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Change Log</h3>
+                    <div class="table-scroll">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>When</th>
+                                    <th>Actor</th>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Details</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in audit_logs %}
+                                <tr>
+                                    <td>{{ log.created_at }}</td>
+                                    <td>{% if log.email %}{{ log.first_name }} {{ log.last_name }}<br><span>{{ log.email }}</span>{% else %}System{% endif %}</td>
+                                    <td>{{ log.action }}</td>
+                                    <td>{{ log.target_type }} #{{ log.target_id }}</td>
+                                    <td>{{ log.details }}</td>
+                                    <td>{{ log.ip_address }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6">No changes logged yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

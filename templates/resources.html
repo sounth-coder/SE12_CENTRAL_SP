@@ -15,23 +15,67 @@
         <main class="main-content">
             <div class="page-container">
                 <h1 class="page-title">Learning Resources</h1>
-                
+
+                {% if can_manage_resources %}
+                <div class="info-panel teacher-panel">
+                    <h3>Add Resource Link</h3>
+                    <form class="portal-form" method="post" action="{{ url_for('teacher_add_resource') }}">
+                        <div class="form-grid-2">
+                            <label>Title
+                                <input name="title" required>
+                            </label>
+                            <label>Subject
+                                <input name="subject" required>
+                            </label>
+                        </div>
+                        <label>Description
+                            <textarea name="description" rows="3"></textarea>
+                        </label>
+                        <div class="form-grid-2">
+                            <label>Google Drive URL
+                                <input name="drive_url" type="url" placeholder="https://drive.google.com/..." required>
+                            </label>
+                            <label>Minimum year
+                                <select name="min_level">
+                                    {% for level in ['7','8','9','10','11','12','T'] %}
+                                    <option value="{{ level }}">{{ level }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                        <button class="portal-button" type="submit">Add resource</button>
+                    </form>
+                </div>
+                {% endif %}
+
                 <div class="info-panel" style="margin-bottom: 1.5rem;">
                     <h3>Study Materials</h3>
                     <div class="resource-list">
                     {% for r in allowed %}
                         <div class="resource-row">
-                        <div>
-                            <p class="resource-title">{{ r.title }}</p>
-                            <p class="resource-meta">
-                            {{ r.subject }} · Year {{ r.min_level }}+
-                            </p>
-                        </div>
+                            <div>
+                                <p class="resource-title">{{ r.title }}</p>
+                                <p class="resource-meta">
+                                    {{ r.subject }} &middot; Year {{ r.min_level }}+
+                                </p>
+                            </div>
 
-                        <a class="resource-action"
-                            href="{{ url_for('resource_gate', resource_id=r.id) }}">
-                            ⬇
-                        </a>
+                            <div class="resource-actions">
+                                <a class="resource-action" href="{{ url_for('resource_gate', resource_id=r.id) }}">
+                                    Open
+                                </a>
+                                {% if is_admin %}
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin_delete_resource', resource_id=r.id) }}"
+                                    onsubmit="return confirm('Are you sure you want to delete this resource?');"
+                                >
+                                    <button class="resource-delete-button" type="submit" aria-label="Delete {{ r.title }}">
+                                        Delete
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </div>
                     {% else %}
                         <p style="opacity:0.6;">No resources available for your year level.</p>
@@ -41,27 +85,23 @@
 
                 <div class="info-panel" style="margin-bottom: 1.5rem;">
                     <h3>Locked Resources</h3>
-
                     <div class="resource-list">
                         {% for r in locked %}
                         <div class="resource-row" style="opacity:0.5; cursor:not-allowed;">
                             <div>
-                            <p class="resource-title">{{ r.title }}</p>
-                            <p class="resource-meta">
-                                Requires Year {{ r.min_level }} access
-                            </p>
+                                <p class="resource-title">{{ r.title }}</p>
+                                <p class="resource-meta">
+                                    Requires Year {{ r.min_level }} access
+                                </p>
                             </div>
 
-                            <span class="resource-action">🔒</span>
+                            <span class="resource-action">Locked</span>
                         </div>
                         {% else %}
                         <p style="opacity:0.6;">No locked resources.</p>
                         {% endfor %}
                     </div>
-                    </div>
-
-
-
+                </div>
             </div>
         </main>
     </div>
