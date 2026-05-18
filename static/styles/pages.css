@@ -842,3 +842,85 @@ GIRRA AI CHATBOT
 .new-content-button:hover .button-icon {
     transform: rotate(-8deg) scale(1.08);
 }
+
+/* Teacher messaging */
+.teacher-chat-page .page-header {
+  align-items: flex-start;
+}
+
+.teacher-chat-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.conversation-list-panel {
+  align-self: start;
+}
+
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.conversation-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(42, 42, 42, 0.95);
+  border-radius: var(--radius-xl);
+  background: rgba(15, 15, 15, 0.55);
+}
+
+.conversation-link:hover,
+.conversation-link.active {
+  border-color: rgba(255, 222, 89, 0.35);
+  background: rgba(255, 222, 89, 0.08);
+}
+
+.conversation-subject {
+  color: var(--girra-text);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.conversation-meta,
+.conversation-preview,
+.message-time {
+  color: var(--girra-text-muted);
+  font-size: 0.78rem;
+}
+
+.conversation-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teacher-thread-panel {
+  margin-top: 0;
+}
+
+.teacher-messages {
+  min-height: 24rem;
+}
+
+.message-author {
+  color: var(--girra-yellow);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.teacher-reply-form {
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 960px) {
+  .teacher-chat-layout {
+    grid-template-columns: 19rem minmax(0, 1fr);
+    align-items: start;
+  }
+}

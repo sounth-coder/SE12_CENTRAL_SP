@@ -113,6 +113,42 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 """)
 
+cur.execute("""
+CREATE TABLE IF NOT EXISTS teacher_conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    teacher_id INTEGER NOT NULL,
+    subject TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','answered','closed')),
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (teacher_id) REFERENCES users(id)
+);
+""")
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS teacher_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id INTEGER NOT NULL,
+    sender_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (conversation_id) REFERENCES teacher_conversations(id),
+    FOREIGN KEY (sender_id) REFERENCES users(id)
+);
+""")
+
+cur.execute("""
+CREATE INDEX IF NOT EXISTS idx_teacher_conversations_student
+ON teacher_conversations(student_id, updated_at);
+""")
+
+cur.execute("""
+CREATE INDEX IF NOT EXISTS idx_teacher_conversations_teacher
+ON teacher_conversations(teacher_id, updated_at);
+""")
+
 
 # ADD USERS TO DB
 password = bcrypt.generate_password_hash("Password123!").decode()

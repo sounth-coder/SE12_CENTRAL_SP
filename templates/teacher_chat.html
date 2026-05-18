@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk to Teachers - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container teacher-chat-page">
+                <!-- PAGE TITLE AND SHORT CONTEXT FOR THE MESSAGE AREA -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Talk to Teachers</h1>
+                        <p class="muted-text">Send questions to a teacher and keep replies in one place.</p>
+                    </div>
+                </div>
+
+                <!-- STUDENTS START NEW CONVERSATIONS FROM HERE -->
+                {% if not can_answer %}
+                <div class="info-panel teacher-panel">
+                    <h3>New Message</h3>
+                    <form class="portal-form" method="post" action="{{ url_for('teacher_chat_new') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-grid-2">
+                            <label>Teacher
+                                <select name="teacher_id" required>
+                                    <option value="">Choose a teacher</option>
+                                    {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label>Subject
+                                <input name="subject" maxlength="120" placeholder="Maths homework question" required>
+                            </label>
+                        </div>
+                        <label>Message
+                            <textarea name="body" rows="4" placeholder="Write your message clearly so your teacher can help." required></textarea>
+                        </label>
+                        <button class="portal-button" type="submit">Send message</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <div class="teacher-chat-layout">
+                    <!-- LEFT SIDE LIST OF MESSAGE THREADS -->
+                    <section class="info-panel conversation-list-panel">
+                        <h3>{% if can_answer %}Teacher Inbox{% else %}My Messages{% endif %}</h3>
+                        <div class="conversation-list">
+                            {% for conversation in conversations %}
+                            <a
+                                href="{{ url_for('teacher_chat', conversation_id=conversation.id) }}"
+                                class="conversation-link {% if active_conversation and active_conversation.id == conversation.id %}active{% endif %}"
+                            >
+                                <span class="conversation-subject">{{ conversation.subject }}</span>
+                                <span class="conversation-meta">
+                                    {% if can_answer %}
+                                    {{ conversation.student_first_name }} {{ conversation.student_last_name }}
+                                    {% else %}
+                                    {{ conversation.teacher_first_name }} {{ conversation.teacher_last_name }}
+                                    {% endif %}
+                                    &middot; {{ conversation.status|title }}
+                                </span>
+                                {% if conversation.latest_body %}
+                                <span class="conversation-preview">{{ conversation.latest_body }}</span>
+                                {% endif %}
+                            </a>
+                            {% else %}
+                            <p class="muted-text">No teacher messages yet.</p>
+                            {% endfor %}
+                        </div>
+                    </section>
+
+                    <!-- RIGHT SIDE THREAD VIEW AND REPLY BOX -->
+                    <section class="chat-panel teacher-thread-panel">
+                        {% if active_conversation %}
+                        <div class="chat-header">
+                            <div class="chat-title">
+                                <span class="chat-dot"></span>
+                                {{ active_conversation.subject }}
+                            </div>
+                            <div class="chat-subtitle">
+                                {{ active_conversation.student_first_name }} {{ active_conversation.student_last_name }}
+                                to
+                                {{ active_conversation.teacher_first_name }} {{ active_conversation.teacher_last_name }}
+                                &middot; {{ active_conversation.status|title }}
+                            </div>
+                        </div>
+
+                        <!-- FULL MESSAGE HISTORY FOR THE SELECTED CONVERSATION -->
+                        <div class="chat-messages teacher-messages">
+                            {% for message in messages %}
+                            <div class="chat-msg {% if message.sender_id == session.get('user_id') %}user{% else %}bot{% endif %}">
+                                <div class="bubble">
+                                    <p class="message-author">{{ message.first_name }} {{ message.last_name }}</p>
+                                    <p>{{ message.body }}</p>
+                                    <p class="message-time">{{ message.created_at }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- REPLIES STAY OPEN UNTIL A TEACHER CLOSES THE THREAD -->
+                        {% if active_conversation.status != 'closed' %}
+                        <form class="chat-inputbar teacher-reply-form" method="post" action="{{ url_for('teacher_chat_reply', conversation_id=active_conversation.id) }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input class="chat-input" name="body" type="text" placeholder="Write a reply..." required>
+                            <button class="chat-send" type="submit">Reply</button>
+                        </form>
+                        {% endif %}
+
+                        <!-- TEACHERS CAN CLOSE A CONVERSATION ONCE IT HAS BEEN HANDLED -->
+                        {% if can_answer and active_conversation.status != 'closed' %}
+                        <form class="inline-form" method="post" action="{{ url_for('teacher_chat_close', conversation_id=active_conversation.id) }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button class="small-button danger" type="submit">Close conversation</button>
+                        </form>
+                        {% endif %}
+                        {% else %}
+                        <div class="chat-header">
+                            <div class="chat-title">
+                                <span class="chat-dot"></span>
+                                No conversation selected
+                            </div>
+                            <div class="chat-subtitle">Choose a message from the list.</div>
+                        </div>
+                        {% endif %}
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

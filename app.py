@@ -227,6 +227,38 @@ def ensure_portal_tables():
             FOREIGN KEY (actor_id) REFERENCES users(id)
         );
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS teacher_conversations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            teacher_id INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','answered','closed')),
+            created_at TEXT DEFAULT (datetime('now')),
+            updated_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (student_id) REFERENCES users(id),
+            FOREIGN KEY (teacher_id) REFERENCES users(id)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS teacher_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversation_id INTEGER NOT NULL,
+            sender_id INTEGER NOT NULL,
+            body TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (conversation_id) REFERENCES teacher_conversations(id),
+            FOREIGN KEY (sender_id) REFERENCES users(id)
+        );
+    """)
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_teacher_conversations_student
+        ON teacher_conversations(student_id, updated_at);
+    """)
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_teacher_conversations_teacher
+        ON teacher_conversations(teacher_id, updated_at);
+    """)
     conn.commit()
     conn.close()
     harden_project_databases()
@@ -288,6 +320,10 @@ def can_publish_posts() -> bool:
     return is_teacher() or is_admin()
 
 def can_manage_resources() -> bool:
+    return is_teacher() or is_admin()
+
+# TEACHERS AND ADMINS CAN HANDLE STUDENT MESSAGE THREADS.
+def can_answer_teacher_messages() -> bool:
     return is_teacher() or is_admin()
 
 def is_google_drive_url(value: str) -> bool:
@@ -712,6 +748,219 @@ def help_centre():
         return redirect(url_for('login'))
     
     return render_template('help.html')
+
+@app.route('/teacher-chat')
+def teacher_chat():
+    """Student-to-teacher messaging."""
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    # LOAD THE TEACHER LIST FIRST SO STUDENTS CAN START A NEW THREAD.
+    user_id = session.get('user_id')
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT id, first_name, last_name
+        FROM users
+        WHERE role IN ('teacher', 'admin')
+        ORDER BY last_name, first_name
+    """)
+    teachers = cur.fetchall()
+
+    if can_answer_teacher_messages():
+        # TEACHERS SEE ONLY THE THREADS ADDRESSED TO THEM.
+        cur.execute("""
+            SELECT
+                teacher_conversations.*,
+                students.first_name AS student_first_name,
+                students.last_name AS student_last_name,
+                teachers.first_name AS teacher_first_name,
+                teachers.last_name AS teacher_last_name,
+                latest.body AS latest_body,
+                latest.created_at AS latest_at
+            FROM teacher_conversations
+            JOIN users AS students ON students.id = teacher_conversations.student_id
+            JOIN users AS teachers ON teachers.id = teacher_conversations.teacher_id
+            LEFT JOIN teacher_messages AS latest
+                ON latest.id = (
+                    SELECT id
+                    FROM teacher_messages
+                    WHERE conversation_id = teacher_conversations.id
+                    ORDER BY created_at DESC, id DESC
+                    LIMIT 1
+                )
+            WHERE teacher_conversations.teacher_id = ?
+            ORDER BY teacher_conversations.updated_at DESC
+        """, (user_id,))
+    else:
+        # STUDENTS SEE THEIR OWN THREADS ACROSS ALL TEACHERS.
+        cur.execute("""
+            SELECT
+                teacher_conversations.*,
+                students.first_name AS student_first_name,
+                students.last_name AS student_last_name,
+                teachers.first_name AS teacher_first_name,
+                teachers.last_name AS teacher_last_name,
+                latest.body AS latest_body,
+                latest.created_at AS latest_at
+            FROM teacher_conversations
+            JOIN users AS students ON students.id = teacher_conversations.student_id
+            JOIN users AS teachers ON teachers.id = teacher_conversations.teacher_id
+            LEFT JOIN teacher_messages AS latest
+                ON latest.id = (
+                    SELECT id
+                    FROM teacher_messages
+                    WHERE conversation_id = teacher_conversations.id
+                    ORDER BY created_at DESC, id DESC
+                    LIMIT 1
+                )
+            WHERE teacher_conversations.student_id = ?
+            ORDER BY teacher_conversations.updated_at DESC
+        """, (user_id,))
+
+    conversations = cur.fetchall()
+    active_id = request.args.get('conversation_id', type=int)
+    if not active_id and conversations:
+        active_id = conversations[0]['id']
+
+    active_conversation = None
+    messages = []
+    if active_id:
+        # THE ACTIVE THREAD MUST BELONG TO THE CURRENT USER ON EITHER SIDE.
+        cur.execute("""
+            SELECT
+                teacher_conversations.*,
+                students.first_name AS student_first_name,
+                students.last_name AS student_last_name,
+                teachers.first_name AS teacher_first_name,
+                teachers.last_name AS teacher_last_name
+            FROM teacher_conversations
+            JOIN users AS students ON students.id = teacher_conversations.student_id
+            JOIN users AS teachers ON teachers.id = teacher_conversations.teacher_id
+            WHERE teacher_conversations.id = ?
+              AND (teacher_conversations.student_id = ? OR teacher_conversations.teacher_id = ?)
+        """, (active_id, user_id, user_id))
+        active_conversation = cur.fetchone()
+
+    if active_conversation:
+        cur.execute("""
+            SELECT teacher_messages.*, users.first_name, users.last_name, users.role
+            FROM teacher_messages
+            JOIN users ON users.id = teacher_messages.sender_id
+            WHERE teacher_messages.conversation_id = ?
+            ORDER BY teacher_messages.created_at, teacher_messages.id
+        """, (active_conversation['id'],))
+        messages = cur.fetchall()
+
+    conn.close()
+    return render_template(
+        'teacher_chat.html',
+        teachers=teachers,
+        conversations=conversations,
+        active_conversation=active_conversation,
+        messages=messages,
+        can_answer=can_answer_teacher_messages()
+    )
+
+@app.post('/teacher-chat/new')
+def teacher_chat_new():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if can_answer_teacher_messages():
+        return redirect(url_for('teacher_chat'))
+    if not valid_csrf():
+        return "Your session expired. Please try again.", 400
+
+    teacher_id = request.form.get('teacher_id', type=int)
+    subject = (request.form.get('subject') or '').strip()
+    body = (request.form.get('body') or '').strip()
+
+    if not teacher_id or not subject or not body:
+        return redirect(url_for('teacher_chat'))
+
+    # ONLY REAL TEACHER OR ADMIN ACCOUNTS CAN BE SELECTED AS RECIPIENTS.
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ? AND role IN ('teacher', 'admin')", (teacher_id,))
+    teacher = cur.fetchone()
+    if not teacher:
+        conn.close()
+        return redirect(url_for('teacher_chat'))
+
+    cur.execute("""
+        INSERT INTO teacher_conversations (student_id, teacher_id, subject)
+        VALUES (?, ?, ?)
+    """, (session.get('user_id'), teacher_id, subject))
+    conversation_id = cur.lastrowid
+    cur.execute("""
+        INSERT INTO teacher_messages (conversation_id, sender_id, body)
+        VALUES (?, ?, ?)
+    """, (conversation_id, session.get('user_id'), body))
+    conn.commit()
+    conn.close()
+    audit("created", "teacher_conversation", conversation_id, subject)
+    return redirect(url_for('teacher_chat', conversation_id=conversation_id))
+
+@app.post('/teacher-chat/<int:conversation_id>/reply')
+def teacher_chat_reply(conversation_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if not valid_csrf():
+        return "Your session expired. Please try again.", 400
+
+    body = (request.form.get('body') or '').strip()
+    if not body:
+        return redirect(url_for('teacher_chat', conversation_id=conversation_id))
+
+    user_id = session.get('user_id')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT *
+        FROM teacher_conversations
+        WHERE id = ? AND (student_id = ? OR teacher_id = ?)
+    """, (conversation_id, user_id, user_id))
+    conversation = cur.fetchone()
+
+    if not conversation or conversation['status'] == 'closed':
+        conn.close()
+        return redirect(url_for('teacher_chat'))
+
+    # A STUDENT REPLY REOPENS THE THREAD; A TEACHER REPLY MARKS IT ANSWERED.
+    next_status = 'answered' if can_answer_teacher_messages() else 'open'
+    cur.execute("""
+        INSERT INTO teacher_messages (conversation_id, sender_id, body)
+        VALUES (?, ?, ?)
+    """, (conversation_id, user_id, body))
+    cur.execute("""
+        UPDATE teacher_conversations
+        SET status = ?, updated_at = datetime('now')
+        WHERE id = ?
+    """, (next_status, conversation_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('teacher_chat', conversation_id=conversation_id))
+
+@app.post('/teacher-chat/<int:conversation_id>/close')
+def teacher_chat_close(conversation_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if not can_answer_teacher_messages():
+        return "Forbidden", 403
+    if not valid_csrf():
+        return "Your session expired. Please try again.", 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE teacher_conversations
+        SET status = 'closed', updated_at = datetime('now')
+        WHERE id = ? AND teacher_id = ?
+    """, (conversation_id, session.get('user_id')))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('teacher_chat', conversation_id=conversation_id))
 
 @app.route('/announcements')
 def announcements():
