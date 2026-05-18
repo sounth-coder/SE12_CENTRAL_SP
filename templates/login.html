@@ -38,14 +38,15 @@
 
             <!-- Login Form -->
             <form id="loginForm" method="POST" action="/login">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input 
-                        type="text" 
+                        type="email" 
                         id="username" 
                         name="username" 
                         class="form-input" 
-                        placeholder="Enter your username"
+                        placeholder="your.email@education.nsw.gov.au"
                         required
                     >
                 </div>

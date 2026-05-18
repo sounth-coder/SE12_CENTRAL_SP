@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+import hmac
 import os
+import re
+import secrets
+import stat
+import time
 from datetime import date, timedelta
 import sqlite3
 from flask_bcrypt import Bcrypt
@@ -39,6 +44,103 @@ app = Flask(__name__,
             template_folder='templates')
 
 bcrypt = Bcrypt(app)
+
+ALLOWED_EMAIL_DOMAIN = "education.nsw.gov.au"
+STUDENT_NUMBER_RE = re.compile(r"^\d{9}$")
+EMAIL_RE = re.compile(r"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$", re.IGNORECASE)
+PASSWORD_RE = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$")
+
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = 15 * 60
+LOGIN_RATE_LIMIT_MAX_FAILURES = 5
+LOGIN_LOCKOUT_SECONDS = 15 * 60
+login_failures = {}
+
+app.secret_key = (
+    os.getenv("SECRET_KEY")
+    or os.getenv("FLASK_SECRET_KEY")
+    or secrets.token_hex(32)
+)
+app.permanent_session_lifetime = timedelta(hours=1)
+
+if not os.getenv("SECRET_KEY") and not os.getenv("FLASK_SECRET_KEY"):
+    print("WARNING: SECRET_KEY is not set. Using a temporary development secret for this run.")
+
+
+def csrf_token():
+    token = session.get("_csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["_csrf_token"] = token
+    return token
+
+
+app.jinja_env.globals["csrf_token"] = csrf_token
+
+
+def valid_csrf() -> bool:
+    token = session.get("_csrf_token")
+    submitted = request.form.get("_csrf_token", "")
+    return bool(token and submitted and hmac.compare_digest(token, submitted))
+
+
+def is_valid_school_email(email: str) -> bool:
+    return bool(email and EMAIL_RE.match(email) and email.endswith(f"@{ALLOWED_EMAIL_DOMAIN}"))
+
+
+def is_strong_password(password: str) -> bool:
+    return bool(PASSWORD_RE.match(password or ""))
+
+
+def is_valid_student_number(student_number) -> bool:
+    return student_number is None or bool(STUDENT_NUMBER_RE.match(student_number))
+
+
+def clean_old_login_failures(now=None):
+    now = now or time.time()
+    expired_before = now - max(LOGIN_RATE_LIMIT_WINDOW_SECONDS, LOGIN_LOCKOUT_SECONDS)
+    for key, entry in list(login_failures.items()):
+        if entry["updated_at"] < expired_before and entry.get("locked_until", 0) < now:
+            login_failures.pop(key, None)
+
+
+def login_rate_key(email: str):
+    return ((email or "").strip().lower(), request_ip())
+
+
+def login_is_locked(email: str) -> bool:
+    now = time.time()
+    clean_old_login_failures(now)
+    entry = login_failures.get(login_rate_key(email))
+    return bool(entry and entry.get("locked_until", 0) > now)
+
+
+def record_failed_login(email: str):
+    now = time.time()
+    clean_old_login_failures(now)
+    key = login_rate_key(email)
+    entry = login_failures.setdefault(key, {"count": 0, "first_at": now, "updated_at": now, "locked_until": 0})
+
+    if now - entry["first_at"] > LOGIN_RATE_LIMIT_WINDOW_SECONDS:
+        entry.update({"count": 0, "first_at": now, "locked_until": 0})
+
+    entry["count"] += 1
+    entry["updated_at"] = now
+    if entry["count"] >= LOGIN_RATE_LIMIT_MAX_FAILURES:
+        entry["locked_until"] = now + LOGIN_LOCKOUT_SECONDS
+
+
+def clear_failed_logins(email: str):
+    login_failures.pop(login_rate_key(email), None)
+
+
+def harden_sqlite_permissions(db_path: str):
+    if os.name == "posix" and os.path.exists(db_path):
+        os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+
+
+def harden_project_databases():
+    harden_sqlite_permissions("girra_portal.db")
+    harden_sqlite_permissions("knowledge.db")
 
 def search_documents(question, top_k=4):
 
@@ -127,6 +229,7 @@ def ensure_portal_tables():
     """)
     conn.commit()
     conn.close()
+    harden_project_databases()
 
 def ensure_security_questions_table():
     ensure_portal_tables()
@@ -230,7 +333,11 @@ def require_admin():
     return None
 
 def request_ip() -> str:
-    return request.headers.get("X-Forwarded-For", request.remote_addr)
+    if os.getenv("TRUST_PROXY_HEADERS", "").lower() == "true":
+        forwarded_for = request.headers.get("X-Forwarded-For", "")
+        if forwarded_for:
+            return forwarded_for.split(",")[0].strip()
+    return request.remote_addr or ""
 
 def audit(action: str, target_type: str, target_id=None, details: str = ""):
     conn = get_db()
@@ -256,9 +363,6 @@ def log_resource_access(user_id: int, resource_id: int):
     conn.close()
 
 
-# SECRET KEY FOR SESSIONS
-app.secret_key = 'girraween-student-portal-2026-secret-key'
-app.permanent_session_lifetime = timedelta(hours=1)
 ensure_portal_tables()
 
 @app.route('/')
@@ -274,9 +378,19 @@ def about():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('username')
-        password = request.form.get('password')
+        if not valid_csrf():
+            return render_template('login.html', error="Your session expired. Please try again."), 400
+
+        email = (request.form.get('username') or '').strip().lower()
+        password = request.form.get('password') or ''
         remember = request.form.get('remember')
+
+        if login_is_locked(email):
+            return render_template('login.html', error="Too many failed attempts. Please wait 15 minutes and try again."), 429
+
+        if not is_valid_school_email(email):
+            record_failed_login(email)
+            return render_template('login.html', error="Invalid email or password")
 
         conn = get_db()
         cur = conn.cursor()
@@ -286,6 +400,7 @@ def login():
         conn.close()
 
         if user and bcrypt.check_password_hash(user['password_hash'], password):
+            clear_failed_logins(email)
             role = user['role'] if 'role' in user.keys() else ('teacher' if user['access_level'] == 'T' else 'student')
             session.permanent = bool(remember)
             session['logged_in'] = True
@@ -299,6 +414,7 @@ def login():
 
             return redirect(url_for('home'))  
 
+        record_failed_login(email)
         return render_template('login.html', error="Invalid email or password")
 
     return render_template('login.html')
@@ -308,12 +424,21 @@ def register():
     ensure_security_questions_table()
 
     if request.method == 'POST':
+        if not valid_csrf():
+            return render_template(
+                'register.html',
+                error="Your session expired. Please try again.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            ), 400
+
         first_name = (request.form.get('first_name') or '').strip()
         last_name = (request.form.get('last_name') or '').strip()
         student_number = (request.form.get('student_number') or '').strip() or None
         email = (request.form.get('email') or '').strip().lower()
         password = request.form.get('password') or ''
         confirm_password = request.form.get('confirm_password') or ''
+        terms_ack = request.form.get('terms_ack')
         answers = {
             question["key"]: (request.form.get(f"security_{question['key']}") or '').strip()
             for question in SECURITY_QUESTIONS
@@ -327,6 +452,30 @@ def register():
                 form=request.form
             )
 
+        if not terms_ack:
+            return render_template(
+                'register.html',
+                error="You must agree to the Terms & Conditions to create an account.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
+        if not is_valid_school_email(email):
+            return render_template(
+                'register.html',
+                error=f"Please use your @{ALLOWED_EMAIL_DOMAIN} school email address.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
+        if not is_valid_student_number(student_number):
+            return render_template(
+                'register.html',
+                error="Barcode number must be exactly 9 digits.",
+                questions=SECURITY_QUESTIONS,
+                form=request.form
+            )
+
         if password != confirm_password:
             return render_template(
                 'register.html',
@@ -335,10 +484,10 @@ def register():
                 form=request.form
             )
 
-        if len(password) < 8:
+        if not is_strong_password(password):
             return render_template(
                 'register.html',
-                error="Password must be at least 8 characters long.",
+                error="Password must be at least 8 characters and include uppercase, lowercase, and a number.",
                 questions=SECURITY_QUESTIONS,
                 form=request.form
             )

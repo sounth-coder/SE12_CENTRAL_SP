@@ -33,6 +33,7 @@
             <p class="login-subtitle">Register for Girra Student Portal</p>
 
             <form method="POST" action="{{ url_for('register') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="first_name">First Name</label>
@@ -69,6 +70,9 @@
                         name="student_number"
                         class="form-input"
                         placeholder="Only needed if you want GirraDigitalID"
+                        inputmode="numeric"
+                        pattern="[0-9]{9}"
+                        maxlength="9"
                         value="{{ form.get('student_number', '') if form else '' }}"
                     >
                     <p class="field-note">
@@ -99,6 +103,8 @@
                             class="form-input"
                             placeholder="At least 8 characters"
                             minlength="8"
+                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                            title="Use at least 8 characters with uppercase, lowercase, and a number."
                             required
                         >
                     </div>
@@ -112,6 +118,8 @@
                             class="form-input"
                             placeholder="Re-enter password"
                             minlength="8"
+                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                            title="Use at least 8 characters with uppercase, lowercase, and a number."
                             required
                         >
                     </div>
