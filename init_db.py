@@ -140,6 +140,17 @@ CREATE TABLE IF NOT EXISTS teacher_messages (
 """)
 
 cur.execute("""
+CREATE TABLE IF NOT EXISTS user_read_state (
+    user_id INTEGER NOT NULL,
+    item_type TEXT NOT NULL,
+    item_id INTEGER NOT NULL DEFAULT 0,
+    last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, item_type, item_id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+""")
+
+cur.execute("""
 CREATE INDEX IF NOT EXISTS idx_teacher_conversations_student
 ON teacher_conversations(student_id, updated_at);
 """)
@@ -235,3 +246,4 @@ conn.commit()
 conn.close()
 
 print("Database initialised successfully")
+

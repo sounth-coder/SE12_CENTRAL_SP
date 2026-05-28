@@ -181,6 +181,12 @@ body {
     border: 1px solid rgba(255, 77, 77, 0.25);
 }
 
+.form-alert-info {
+    color: #fff1a8;
+    background: rgba(255, 222, 89, 0.1);
+    border: 1px solid rgba(255, 222, 89, 0.25);
+}
+
 .security-section {
     margin: 1.5rem 0;
     padding-top: 1.25rem;
@@ -291,6 +297,11 @@ body {
 .btn-submit:hover {
     background-color: rgba(196, 169, 98, 0.9);
     box-shadow: 0 6px 20px rgba(196, 169, 98, 0.3);
+}
+
+.btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 
 /* Form Actions */

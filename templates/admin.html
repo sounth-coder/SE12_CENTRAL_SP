@@ -17,6 +17,65 @@
             <div class="page-container admin-page">
                 <h1 class="page-title">Admin Console</h1>
 
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <strong>{{ total_members }}</strong>
+                        <span class="muted-text">Members</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ total_resources }}</strong>
+                        <span class="muted-text">Resources</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ total_announcements }}</strong>
+                        <span class="muted-text">Announcements</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ open_conversations }}</strong>
+                        <span class="muted-text">Open teacher chats</span>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Analytics</h3>
+                    <div class="table-scroll">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Top Resources</th>
+                                    <th>Most Active Members</th>
+                                    <th>Teacher Chat Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {% for resource in top_resources %}
+                                        <p>{{ resource.title }} <span>{{ resource.open_count }} opens</span></p>
+                                        {% else %}
+                                        <p>No resource opens yet.</p>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for user in active_users %}
+                                        <p>{{ user.first_name }} {{ user.last_name }} <span>{{ user.open_count }} opens</span></p>
+                                        {% else %}
+                                        <p>No activity yet.</p>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for row in conversation_stats %}
+                                        <p>{{ row.status|title }} <span>{{ row.count }}</span></p>
+                                        {% else %}
+                                        <p>No teacher chats yet.</p>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="info-panel">
                     <h3>Add Member</h3>
                     <form class="portal-form" method="post">

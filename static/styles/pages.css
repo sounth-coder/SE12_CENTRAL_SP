@@ -23,6 +23,118 @@
     margin-bottom: 1.5rem;
 }
 
+.girra-countdown-page {
+    padding-bottom: 2rem;
+}
+
+.public-dashboard .main-content {
+    margin-left: 0;
+    width: 100%;
+}
+
+.countdown-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.5fr);
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.countdown-label {
+    color: var(--girra-yellow);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+
+.countdown-hero h2 {
+    font-size: 2rem;
+    margin-bottom: 0.35rem;
+}
+
+.countdown-clock {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: center;
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+    background: rgba(255, 222, 89, 0.1);
+    border: 1px solid rgba(255, 222, 89, 0.24);
+}
+
+.countdown-clock span {
+    color: var(--girra-yellow);
+    font-size: clamp(2rem, 8vw, 3.4rem);
+    font-weight: 850;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.countdown-clock small {
+    color: var(--girra-text-muted);
+    font-weight: 700;
+    text-align: center;
+}
+
+.bell-list,
+.note-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.bell-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0.95rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.bell-row.active {
+    background: rgba(255, 222, 89, 0.13);
+    border-color: rgba(255, 222, 89, 0.36);
+}
+
+.bell-row.past {
+    opacity: 0.58;
+}
+
+.bell-row span {
+    font-weight: 750;
+}
+
+.bell-row strong {
+    color: var(--girra-yellow);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.note-list p {
+    margin: 0;
+    color: var(--girra-text-muted);
+}
+
+@media (max-width: 720px) {
+    .countdown-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .bell-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .bell-row strong {
+        text-align: left;
+    }
+}
+
 .new-content-button {
     display: inline-flex;
     align-items: center;
@@ -441,19 +553,37 @@
     margin-bottom: 0.55rem;
 }
 
+.content-card {
+    padding: 1.6rem 1.75rem;
+}
+
 .content-card-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
+    margin-bottom: 0.45rem;
 }
 
-.content-card-header h3 {
+.content-card-title {
     min-width: 0;
+    flex: 1;
 }
 
-.content-card-header .inline-form {
+.content-card-title h3 {
+    margin-bottom: 0;
+    line-height: 1.25;
+}
+
+.content-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
     flex-shrink: 0;
+}
+
+.content-actions .inline-form {
     margin-top: 0;
 }
 
@@ -468,6 +598,21 @@
     margin-bottom: 0.75rem;
 }
 
+@media (max-width: 720px) {
+    .content-card {
+        padding: 1.25rem;
+    }
+
+    .content-card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .content-actions {
+        justify-content: flex-start;
+    }
+}
+
 .content-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -476,6 +621,68 @@
     color: var(--girra-yellow);
     font-size: 0.75rem;
     margin-bottom: 0.75rem;
+}
+
+.nav-badge {
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.35rem;
+    margin-left: auto;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.filter-panel {
+    margin-bottom: 1.5rem;
+}
+
+.resource-description {
+    margin: 0.25rem 0 0;
+    color: var(--girra-text-muted);
+}
+
+.edit-panel {
+    margin-top: 0.85rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.stat-card strong {
+    display: block;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    color: var(--girra-text);
+}
+
+.status-message {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-lg);
+    background: rgba(34, 197, 94, 0.16);
+    color: #bbf7d0;
+}
+
+.status-message.error {
+    background: rgba(239, 68, 68, 0.16);
+    color: #fecaca;
 }
 
 .admin-page {

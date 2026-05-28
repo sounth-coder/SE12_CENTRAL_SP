@@ -23,48 +23,128 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancelBtn');
     const formTitle = document.getElementById('formTitle');
     const formSubtitle = document.getElementById('formSubtitle');
+    const forgotPasswordSubmit = document.getElementById('forgotPasswordSubmit');
+    const forgotPasswordMessage = document.getElementById('forgotPasswordMessage');
+    const securityQuestionsFields = document.getElementById('securityQuestionsFields');
+    const newPasswordFields = document.getElementById('newPasswordFields');
+    const csrfToken = document.getElementById('forgotCsrfToken').value;
+    let resetStep = 'questions';
+    let loadedQuestions = [];
+
+    function showForgotMessage(message, type) {
+        forgotPasswordMessage.textContent = message;
+        forgotPasswordMessage.className = `form-alert form-alert-${type}`;
+        forgotPasswordMessage.style.display = 'block';
+    }
+
+    function clearForgotMessage() {
+        forgotPasswordMessage.textContent = '';
+        forgotPasswordMessage.style.display = 'none';
+    }
+
+    function resetForgotPasswordForm() {
+        resetStep = 'questions';
+        loadedQuestions = [];
+        forgotPasswordForm.reset();
+        securityQuestionsFields.innerHTML = '';
+        securityQuestionsFields.style.display = 'none';
+        newPasswordFields.style.display = 'none';
+        document.getElementById('email').readOnly = false;
+        forgotPasswordSubmit.textContent = 'Continue';
+        clearForgotMessage();
+    }
     
     // TOGGLE TO FORGET 
     forgotPasswordBtn.addEventListener('click', function() {
         loginForm.style.display = 'none';
         forgotPasswordForm.style.display = 'block';
         formTitle.textContent = 'Reset Password';
-        formSubtitle.textContent = 'Enter your email to receive reset instructions';
+        formSubtitle.textContent = 'Use your security questions to reset your password';
     });
     
     // TOGGLE TO LOGIN
     cancelBtn.addEventListener('click', function() {
+        resetForgotPasswordForm();
         forgotPasswordForm.style.display = 'none';
         loginForm.style.display = 'block';
         formTitle.textContent = 'Welcome Back';
         formSubtitle.textContent = 'Girra Student Portal';
     });
     
-    // STILL NEEDS WORK - FORGOT PASSWORD SUBMISSION
     forgotPasswordForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('email').value;
+        const payload = { email, action: resetStep };
+
+        if (resetStep === 'reset') {
+            payload.answers = {};
+            loadedQuestions.forEach(function(question) {
+                const answerInput = document.getElementById(`security_answer_${question.key}`);
+                payload.answers[question.key] = answerInput ? answerInput.value : '';
+            });
+            payload.new_password = document.getElementById('newPassword').value;
+            payload.confirm_password = document.getElementById('confirmNewPassword').value;
+        }
         
         try {
+            clearForgotMessage();
+            forgotPasswordSubmit.disabled = true;
             const response = await fetch('/api/forgot-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
-                body: JSON.stringify({ email })
+                body: JSON.stringify(payload)
             });
             
             const data = await response.json();
             
-            if (data.success) {
+            if (!response.ok || !data.success) {
+                showForgotMessage(data.message || 'Password reset failed. Please try again.', 'error');
+                return;
+            }
+
+            if (resetStep === 'questions') {
+                loadedQuestions = data.questions || [];
+                securityQuestionsFields.innerHTML = '';
+                loadedQuestions.forEach(function(question) {
+                    const group = document.createElement('div');
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+
+                    group.className = 'form-group';
+                    label.setAttribute('for', `security_answer_${question.key}`);
+                    label.textContent = question.text;
+                    input.type = 'text';
+                    input.id = `security_answer_${question.key}`;
+                    input.className = 'form-input';
+                    input.autocomplete = 'off';
+                    input.required = true;
+
+                    group.appendChild(label);
+                    group.appendChild(input);
+                    securityQuestionsFields.appendChild(group);
+                });
+                securityQuestionsFields.style.display = 'block';
+                newPasswordFields.style.display = 'block';
+                document.getElementById('email').readOnly = true;
+                forgotPasswordSubmit.textContent = 'Reset Password';
+                resetStep = 'reset';
+                showForgotMessage('Answer your security questions and choose a new password.', 'info');
+                return;
+            }
+
+            if (resetStep === 'reset') {
                 alert(data.message);
-                // SWITCH TO LOGIN
                 cancelBtn.click();
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            showForgotMessage('An error occurred. Please try again.', 'error');
+        } finally {
+            forgotPasswordSubmit.disabled = false;
         }
     });
 });

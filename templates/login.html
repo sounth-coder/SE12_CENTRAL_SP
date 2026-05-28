@@ -78,20 +78,46 @@
 
             <!-- Forgot Password Form (Hidden) -->
             <form id="forgotPasswordForm" style="display: none;">
+                <input type="hidden" id="forgotCsrfToken" value="{{ csrf_token() }}">
+                <div id="forgotPasswordMessage" class="form-alert" style="display: none;"></div>
                 <div class="form-group">
                     <label for="email">School Email</label>
                     <input 
                         type="email" 
                         id="email" 
                         class="form-input" 
-                        placeholder="your.email@student.girra.nsw.edu.au"
+                        placeholder="your.email@education.nsw.gov.au"
                         required
                     >
                 </div>
 
+                <div id="securityQuestionsFields" style="display: none;"></div>
+
+                <div id="newPasswordFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input
+                            type="password"
+                            id="newPassword"
+                            class="form-input"
+                            placeholder="Enter a new password"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input
+                            type="password"
+                            id="confirmNewPassword"
+                            class="form-input"
+                            placeholder="Re-enter the new password"
+                        >
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn-submit">Send Reset Link</button>
+                    <button type="submit" class="btn-submit" id="forgotPasswordSubmit">Continue</button>
                 </div>
             </form>
 

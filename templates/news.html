@@ -54,6 +54,11 @@
                     {% endif %}
                     <div class="content-card-header">
                         <h3>{{ item.title }}</h3>
+                        {% if can_publish %}
+                        <button class="resource-action" type="button" data-compose-toggle="news-edit-{{ item.id }}" aria-expanded="false">
+                            Edit
+                        </button>
+                        {% endif %}
                         {% if is_admin %}
                         <form
                             class="inline-form"
@@ -72,6 +77,25 @@
                         {% if item.first_name %} &middot; {{ item.first_name }} {{ item.last_name }}{% endif %}
                     </p>
                     <p>{{ item.body }}</p>
+                    {% if can_publish %}
+                    <div class="info-panel edit-panel" id="news-edit-{{ item.id }}" hidden>
+                        <h3>Edit Girra News</h3>
+                        <form class="portal-form" method="post" action="{{ url_for('teacher_edit_content', content_id=item.id) }}">
+                            <div class="form-grid-2">
+                                <label>Headline
+                                    <input name="title" value="{{ item.title }}" required>
+                                </label>
+                                <label>Category
+                                    <input name="category" value="{{ item.category or '' }}">
+                                </label>
+                            </div>
+                            <label>Story
+                                <textarea name="body" rows="6" required>{{ item.body }}</textarea>
+                            </label>
+                            <button class="portal-button" type="submit">Save news</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="info-panel">

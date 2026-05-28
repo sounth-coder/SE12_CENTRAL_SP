@@ -16,6 +16,34 @@
             <div class="page-container">
                 <h1 class="page-title">Learning Resources</h1>
 
+                <div class="info-panel filter-panel">
+                    <h3>Find Resources</h3>
+                    <form class="portal-form" method="get" action="{{ url_for('resources') }}">
+                        <div class="form-grid-2">
+                            <label>Search
+                                <input name="q" value="{{ search }}" placeholder="Title, subject, description">
+                            </label>
+                            <label>Subject
+                                <select name="subject">
+                                    <option value="">All subjects</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject }}" {% if subject_filter == subject %}selected{% endif %}>{{ subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label>Minimum year
+                                <select name="level">
+                                    <option value="">All years</option>
+                                    {% for level in ['7','8','9','10','11','12','T'] %}
+                                    <option value="{{ level }}" {% if level_filter == level %}selected{% endif %}>{{ level }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                        <button class="portal-button" type="submit">Apply filters</button>
+                    </form>
+                </div>
+
                 {% if can_manage_resources %}
                 <div class="info-panel teacher-panel">
                     <h3>Add Resource Link</h3>
@@ -58,12 +86,20 @@
                                 <p class="resource-meta">
                                     {{ r.subject }} &middot; Year {{ r.min_level }}+
                                 </p>
+                                {% if r.description %}
+                                <p class="resource-description">{{ r.description }}</p>
+                                {% endif %}
                             </div>
 
                             <div class="resource-actions">
                                 <a class="resource-action" href="{{ url_for('resource_gate', resource_id=r.id) }}">
                                     Open
                                 </a>
+                                {% if can_manage_resources %}
+                                <button class="resource-action" type="button" data-compose-toggle="resource-edit-{{ r.id }}" aria-expanded="false">
+                                    Edit
+                                </button>
+                                {% endif %}
                                 {% if is_admin %}
                                 <form
                                     method="post"
@@ -77,6 +113,37 @@
                                 {% endif %}
                             </div>
                         </div>
+                        {% if can_manage_resources %}
+                        <div class="info-panel edit-panel" id="resource-edit-{{ r.id }}" hidden>
+                            <h3>Edit Resource</h3>
+                            <form class="portal-form" method="post" action="{{ url_for('teacher_edit_resource', resource_id=r.id) }}">
+                                <div class="form-grid-2">
+                                    <label>Title
+                                        <input name="title" value="{{ r.title }}" required>
+                                    </label>
+                                    <label>Subject
+                                        <input name="subject" value="{{ r.subject }}" required>
+                                    </label>
+                                </div>
+                                <label>Description
+                                    <textarea name="description" rows="3">{{ r.description or '' }}</textarea>
+                                </label>
+                                <div class="form-grid-2">
+                                    <label>Google Drive URL
+                                        <input name="drive_url" type="url" value="{{ r.drive_url }}" required>
+                                    </label>
+                                    <label>Minimum year
+                                        <select name="min_level">
+                                            {% for level in ['7','8','9','10','11','12','T'] %}
+                                            <option value="{{ level }}" {% if r.min_level == level %}selected{% endif %}>{{ level }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </label>
+                                </div>
+                                <button class="portal-button" type="submit">Save resource</button>
+                            </form>
+                        </div>
+                        {% endif %}
                     {% else %}
                         <p style="opacity:0.6;">No resources available for your year level.</p>
                     {% endfor %}

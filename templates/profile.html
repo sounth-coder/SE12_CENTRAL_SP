@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container">
+                <h1 class="page-title">Profile</h1>
+
+                {% if message %}
+                <div class="status-message">{{ message }}</div>
+                {% endif %}
+                {% if error %}
+                <div class="status-message error">{{ error }}</div>
+                {% endif %}
+
+                <div class="info-panel">
+                    <h3>Account Details</h3>
+                    <p class="muted-text">{{ user.first_name }} {{ user.last_name }} &middot; {{ user.email }}</p>
+                    <p class="muted-text">Role: {{ user.role|title }} &middot; Access level: {{ user.access_level }}</p>
+                    <form class="portal-form" method="post">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="profile">
+                        <label>Girra ID
+                            <input name="student_number" value="{{ user.student_number or '' }}" maxlength="9" placeholder="9 digit barcode number">
+                        </label>
+                        <button class="portal-button" type="submit">Save profile</button>
+                    </form>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Change Password</h3>
+                    <form class="portal-form" method="post">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="password">
+                        <div class="form-grid-2">
+                            <label>Current password
+                                <input name="current_password" type="password" required>
+                            </label>
+                            <label>New password
+                                <input name="new_password" type="password" required>
+                            </label>
+                            <label>Confirm new password
+                                <input name="confirm_password" type="password" required>
+                            </label>
+                        </div>
+                        <button class="portal-button" type="submit">Change password</button>
+                    </form>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Security Questions</h3>
+                    <form class="portal-form" method="post">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="security">
+                        {% for question in questions %}
+                        <label>{{ question.text }}
+                            <input name="security_{{ question.key }}" required>
+                        </label>
+                        {% endfor %}
+                        <button class="portal-button" type="submit">Update security questions</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

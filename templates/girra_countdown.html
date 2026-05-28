@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Girra Countdown - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    {% if not session.get('logged_in') %}
+    <div class="grid-background"></div>
+    <header class="header">
+        <div class="container-wide">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img
+                        src="{{ url_for('static', filename='assets/images/GirraExc/company_logo.png') }}"
+                        alt="CENTRAL Logo"
+                        class="sidebar-logo-img"
+                    />
+                </div>
+
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/#subjects">About</a>
+                    <a href="https://girraween-h.schools.nsw.gov.au/learning-and-support/assessments">Assessment Hub</a>
+                    <a href="https://girraween-h.sentral.com.au/s-Qedxel/webcal/calendar/4">Calendar</a>
+                    <a href="https://oliver-20.library.det.nsw.edu.au/4/home/news">Girraween Library</a>
+                    <a href="/girra-countdown">Girra Countdown</a>
+                    <a href="/about">HSC Countdown</a>
+                </nav>
+
+                <div class="auth-buttons">
+                    <a href="/login" class="btn-text">Sign in</a>
+                    <a href="{{ url_for('register') }}" class="btn-register">Register</a>
+                </div>
+            </div>
+
+            <nav class="mobile-nav-links" aria-label="Quick links">
+                <a href="/">Home</a>
+                <a href="/#subjects">About</a>
+                <a href="https://girraween-h.schools.nsw.gov.au/learning-and-support/assessments">Assessment Hub</a>
+                <a href="https://girraween-h.sentral.com.au/s-Qedxel/webcal/calendar/4">Calendar</a>
+                <a href="https://oliver-20.library.det.nsw.edu.au/4/home/news">Girraween Library</a>
+                <a href="/girra-countdown">Girra Countdown</a>
+                <a href="/about">HSC Countdown</a>
+            </nav>
+        </div>
+    </header>
+    {% endif %}
+
+    <div class="dashboard {% if not session.get('logged_in') %}public-dashboard{% endif %}">
+        {% if session.get('logged_in') %}
+        {% include 'sidebar.html' %}
+        {% endif %}
+
+        <main class="main-content">
+            <div class="page-container girra-countdown-page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Girra Countdown</h1>
+                        <p class="muted-text">Live bell countdown based on Girraween High School bell times.</p>
+                    </div>
+                </div>
+
+                <section class="countdown-hero info-panel">
+                    <div>
+                        <p class="countdown-label" id="countdown-day">Today</p>
+                        <h2 id="countdown-current">Loading bell times...</h2>
+                        <p class="muted-text" id="countdown-range"></p>
+                    </div>
+                    <div class="countdown-clock" aria-live="polite">
+                        <span id="countdown-time">--:--:--</span>
+                        <small id="countdown-target">Until next bell</small>
+                    </div>
+                </section>
+
+                <section class="info-panel">
+                    <h3>Today's Bell Times</h3>
+                    <div class="bell-list" id="bell-list"></div>
+                </section>
+
+                <section class="info-panel">
+                    <h3>Sport Notes</h3>
+                    <div class="note-list">
+                        <p>Wednesday sport day has a 2:45 bell.</p>
+                        <p>Friday Week A: Years 7-10 are dismissed at 1:25pm, with supervision available until 3:10pm.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/girra_countdown.js') }}"></script>
+</body>
+</html>

@@ -6,6 +6,7 @@
     <title>Home - Girraween Student Portal</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
 </head>
 <body>
     <div class="dashboard">
@@ -37,11 +38,20 @@
                         </svg>
                         <span class="nav-label">Student ID</span>
                     </a>
+                    <a href="/profile" class="nav-item" data-page="profile">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.236.8 5.879 2.129M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span class="nav-label">Profile</span>
+                    </a>
                     <a href="/resources" class="nav-item" data-page="resources">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                         </svg>
                         <span class="nav-label">Resources</span>
+                        {% if notifications.resources %}
+                        <span class="nav-badge">{{ notifications.resources }}</span>
+                        {% endif %}
                     </a>
                     <a href="/help" class="nav-item" data-page="help">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,6 +64,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v7a2 2 0 01-2 2h-6l-4 4v-4H7a2 2 0 01-2-2v-1m12-8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v7a2 2 0 002 2h6l4 4v-4h2a2 2 0 002-2V8z"/>
                         </svg>
                         <span class="nav-label">Talk to Teachers</span>
+                        {% if notifications.teacher_chat %}
+                        <span class="nav-badge">{{ notifications.teacher_chat }}</span>
+                        {% endif %}
                     </a>
                     {% if is_admin %}
                     <a href="/admin" class="nav-item" data-page="admin">
@@ -70,12 +83,55 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
                         <span class="nav-label">Announcements</span>
+                        {% if notifications.announcements %}
+                        <span class="nav-badge">{{ notifications.announcements }}</span>
+                        {% endif %}
                     </a>
                     <a href="/news" class="nav-item" data-page="news">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <span class="nav-label">Girra News</span>
+                        {% if notifications.news %}
+                        <span class="nav-badge">{{ notifications.news }}</span>
+                        {% endif %}
+                    </a>
+                    <div class="nav-header">SCHOOL LINKS</div>
+                    <a href="/#subjects" class="nav-item" data-page="about-portal" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 6h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="nav-label">About Portal</span>
+                    </a>
+                    <a href="https://girraween-h.schools.nsw.gov.au/learning-and-support/assessments" class="nav-item" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span class="nav-label">Assessment Hub</span>
+                    </a>
+                    <a href="https://girraween-h.sentral.com.au/s-Qedxel/webcal/calendar/4" class="nav-item" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+                        </svg>
+                        <span class="nav-label">Calendar</span>
+                    </a>
+                    <a href="https://oliver-20.library.det.nsw.edu.au/4/home/news" class="nav-item" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <span class="nav-label">Girraween Library</span>
+                    </a>
+                    <a href="/girra-countdown" class="nav-item" data-page="girra-countdown" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="nav-label">Girra Countdown</span>
+                    </a>
+                    <a href="/about" class="nav-item" data-page="hsc-countdown" target="_blank" rel="noopener noreferrer">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="nav-label">HSC Countdown</span>
                     </a>
                     <a href="#" class="nav-item" data-page="prefects">
                         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +187,19 @@
                     </div>
                     <div>
                         <h3>Resources</h3>
-                        <p>Access learning materials</p>
+                        <p>Access learning materials{% if notifications.resources %} · {{ notifications.resources }} new{% endif %}</p>
+                    </div>
+                </a>
+
+                <a href="/profile" class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.236.8 5.879 2.129M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Profile</h3>
+                        <p>Update your account settings</p>
                     </div>
                 </a>
 
@@ -155,7 +223,7 @@
                     </div>
                     <div>
                         <h3>Talk to Teachers</h3>
-                        <p>Send questions directly to teachers</p>
+                        <p>Send questions directly to teachers{% if notifications.teacher_chat %} · {{ notifications.teacher_chat }} unread{% endif %}</p>
                     </div>
                 </a>
 

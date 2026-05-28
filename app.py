@@ -66,6 +66,7 @@ if not os.getenv("SECRET_KEY") and not os.getenv("FLASK_SECRET_KEY"):
     print("WARNING: SECRET_KEY is not set. Using a temporary development secret for this run.")
 
 
+### CSRF PROTECTION 
 def csrf_token():
     token = session.get("_csrf_token")
     if not token:
@@ -78,8 +79,15 @@ app.jinja_env.globals["csrf_token"] = csrf_token
 
 
 def valid_csrf() -> bool:
+    return valid_csrf_token_value(request.form.get("_csrf_token", ""))
+
+
+def valid_json_csrf() -> bool:
+    return valid_csrf_token_value(request.headers.get("X-CSRFToken", ""))
+
+
+def valid_csrf_token_value(submitted: str) -> bool:
     token = session.get("_csrf_token")
-    submitted = request.form.get("_csrf_token", "")
     return bool(token and submitted and hmac.compare_digest(token, submitted))
 
 
@@ -89,6 +97,10 @@ def is_valid_school_email(email: str) -> bool:
 
 def is_strong_password(password: str) -> bool:
     return bool(PASSWORD_RE.match(password or ""))
+
+
+def normalize_security_answer(answer: str) -> str:
+    return re.sub(r"\s+", " ", (answer or "").strip().lower())
 
 
 def is_valid_student_number(student_number) -> bool:
@@ -170,7 +182,7 @@ def search_documents(question, top_k=4):
     return scored[:top_k]
 
 def get_db():
-    conn = sqlite3.connect("girra_portal.db")
+    conn = sqlite3.connect("girra_portal.db") 
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -249,6 +261,16 @@ def ensure_portal_tables():
             created_at TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (conversation_id) REFERENCES teacher_conversations(id),
             FOREIGN KEY (sender_id) REFERENCES users(id)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS user_read_state (
+            user_id INTEGER NOT NULL,
+            item_type TEXT NOT NULL,
+            item_id INTEGER NOT NULL DEFAULT 0,
+            last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (user_id, item_type, item_id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
         );
     """)
     cur.execute("""
@@ -399,6 +421,110 @@ def log_resource_access(user_id: int, resource_id: int):
     conn.close()
 
 
+def mark_read(item_type: str, item_id: int = 0):
+    user_id = session.get("user_id")
+    if not user_id:
+        return
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO user_read_state (user_id, item_type, item_id, last_seen_at)
+        VALUES (?, ?, ?, datetime('now'))
+        ON CONFLICT(user_id, item_type, item_id)
+        DO UPDATE SET last_seen_at = excluded.last_seen_at
+    """, (user_id, item_type, item_id))
+    conn.commit()
+    conn.close()
+
+
+def get_last_seen(cur, user_id: int, item_type: str, item_id: int = 0):
+    cur.execute("""
+        SELECT last_seen_at
+        FROM user_read_state
+        WHERE user_id = ? AND item_type = ? AND item_id = ?
+    """, (user_id, item_type, item_id))
+    row = cur.fetchone()
+    return row["last_seen_at"] if row else "1970-01-01 00:00:00"
+
+
+def get_notification_counts():
+    if not session.get("logged_in"):
+        return {"announcements": 0, "news": 0, "resources": 0, "teacher_chat": 0, "total": 0}
+
+    user_id = session.get("user_id")
+    user_level = session.get("access_level", "7")
+    conn = get_db()
+    cur = conn.cursor()
+
+    announcement_seen = get_last_seen(cur, user_id, "announcements")
+    news_seen = get_last_seen(cur, user_id, "news")
+    resources_seen = get_last_seen(cur, user_id, "resources")
+
+    cur.execute("""
+        SELECT COUNT(*) AS count
+        FROM content_items
+        WHERE content_type = 'announcement' AND created_at > ?
+    """, (announcement_seen,))
+    announcements_count = cur.fetchone()["count"]
+
+    cur.execute("""
+        SELECT COUNT(*) AS count
+        FROM content_items
+        WHERE content_type = 'news' AND created_at > ?
+    """, (news_seen,))
+    news_count = cur.fetchone()["count"]
+
+    if is_admin():
+        cur.execute("SELECT COUNT(*) AS count FROM resources WHERE created_at > ?", (resources_seen,))
+    else:
+        allowed_levels = [level for level in LEVEL_ORDER if can_access(user_level, level)]
+        if allowed_levels:
+            placeholders = ",".join("?" for _ in allowed_levels)
+            cur.execute(
+                f"SELECT COUNT(*) AS count FROM resources WHERE created_at > ? AND min_level IN ({placeholders})",
+                [resources_seen, *allowed_levels]
+            )
+        else:
+            cur.execute("SELECT 0 AS count")
+    resources_count = cur.fetchone()["count"]
+
+    cur.execute("""
+        SELECT COUNT(*) AS count
+        FROM teacher_conversations AS c
+        JOIN teacher_messages AS latest ON latest.id = (
+            SELECT id
+            FROM teacher_messages
+            WHERE conversation_id = c.id
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN user_read_state AS rs
+            ON rs.user_id = ?
+           AND rs.item_type = 'teacher_chat'
+           AND rs.item_id = c.id
+        WHERE (c.student_id = ? OR c.teacher_id = ?)
+          AND latest.sender_id <> ?
+          AND latest.created_at > COALESCE(rs.last_seen_at, '1970-01-01 00:00:00')
+    """, (user_id, user_id, user_id, user_id))
+    teacher_chat_count = cur.fetchone()["count"]
+    conn.close()
+
+    total = announcements_count + news_count + resources_count + teacher_chat_count
+    return {
+        "announcements": announcements_count,
+        "news": news_count,
+        "resources": resources_count,
+        "teacher_chat": teacher_chat_count,
+        "total": total,
+    }
+
+
+@app.context_processor
+def inject_notifications():
+    return {"notifications": get_notification_counts()}
+
+
 ensure_portal_tables()
 
 @app.route('/')
@@ -409,6 +535,10 @@ def index():
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+@app.route('/girra-countdown')
+def girra_countdown():
+    return render_template('girra_countdown.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -541,7 +671,7 @@ def register():
             user_id = cur.lastrowid
 
             for question in SECURITY_QUESTIONS:
-                answer_hash = bcrypt.generate_password_hash(answers[question["key"]].lower()).decode()
+                answer_hash = bcrypt.generate_password_hash(normalize_security_answer(answers[question["key"]])).decode()
                 cur.execute("""
                     INSERT INTO user_security_questions
                     (user_id, question_key, question_text, answer_hash)
@@ -612,12 +742,106 @@ def student_id():
         role_label=role_label
     )
 
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    ensure_security_questions_table()
+    user_id = session.get('user_id')
+    message = None
+    error = None
+
+    if request.method == 'POST':
+        if not valid_csrf():
+            error = "Your session expired. Please try again."
+        else:
+            action = request.form.get('action')
+            conn = get_db()
+            cur = conn.cursor()
+
+            if action == 'profile':
+                student_number = (request.form.get('student_number') or '').strip() or None
+                if is_valid_student_number(student_number):
+                    try:
+                        cur.execute("UPDATE users SET student_number = ? WHERE id = ?", (student_number, user_id))
+                        conn.commit()
+                        session['student_number'] = student_number
+                        audit("updated", "profile", user_id, "Updated Girra ID")
+                        message = "Profile updated."
+                    except sqlite3.IntegrityError:
+                        conn.rollback()
+                        error = "That Girra ID is already registered."
+                else:
+                    error = "Girra ID must be exactly 9 digits."
+
+            elif action == 'password':
+                current_password = request.form.get('current_password') or ''
+                new_password = request.form.get('new_password') or ''
+                confirm_password = request.form.get('confirm_password') or ''
+                cur.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,))
+                user = cur.fetchone()
+
+                if not user or not bcrypt.check_password_hash(user['password_hash'], current_password):
+                    error = "Current password is incorrect."
+                elif new_password != confirm_password:
+                    error = "New passwords do not match."
+                elif not is_strong_password(new_password):
+                    error = "Password must be at least 8 characters and include uppercase, lowercase, and a number."
+                else:
+                    password_hash = bcrypt.generate_password_hash(new_password).decode()
+                    cur.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id))
+                    conn.commit()
+                    audit("updated", "profile", user_id, "Changed password")
+                    message = "Password changed."
+
+            elif action == 'security':
+                answers = {
+                    question["key"]: (request.form.get(f"security_{question['key']}") or '').strip()
+                    for question in SECURITY_QUESTIONS
+                }
+                if not all(answers.values()):
+                    error = "Please answer every security question."
+                else:
+                    for question in SECURITY_QUESTIONS:
+                        answer_hash = bcrypt.generate_password_hash(normalize_security_answer(answers[question["key"]])).decode()
+                        cur.execute("""
+                            INSERT INTO user_security_questions
+                            (user_id, question_key, question_text, answer_hash)
+                            VALUES (?, ?, ?, ?)
+                            ON CONFLICT(user_id, question_key)
+                            DO UPDATE SET question_text = excluded.question_text,
+                                          answer_hash = excluded.answer_hash
+                        """, (user_id, question["key"], question["text"], answer_hash))
+                    conn.commit()
+                    audit("updated", "profile", user_id, "Updated security questions")
+                    message = "Security questions updated."
+
+            conn.close()
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT first_name, last_name, email, student_number, access_level, role FROM users WHERE id = ?", (user_id,))
+    user = cur.fetchone()
+    conn.close()
+
+    return render_template(
+        'profile.html',
+        user=user,
+        questions=SECURITY_QUESTIONS,
+        message=message,
+        error=error
+    )
+
 @app.route('/resources')
 def resources():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
     user_level = session.get('access_level', '7')
+    search = (request.args.get('q') or '').strip()
+    subject_filter = (request.args.get('subject') or '').strip()
+    level_filter = (request.args.get('level') or '').strip()
 
     conn = get_db()
     cur = conn.cursor()
@@ -631,13 +855,28 @@ def resources():
     conn.close()
 
     allowed, locked = [], []
+    subjects = sorted({r['subject'] for r in rows if r['subject']})
     for r in rows:
-        (allowed if is_admin() or can_access(user_level, r['min_level']) else locked).append(dict(r))
+        resource = dict(r)
+        haystack = f"{resource['title']} {resource.get('description') or ''} {resource['subject']}".lower()
+        if search and search.lower() not in haystack:
+            continue
+        if subject_filter and resource['subject'] != subject_filter:
+            continue
+        if level_filter and resource['min_level'] != level_filter:
+            continue
+        (allowed if is_admin() or can_access(user_level, resource['min_level']) else locked).append(resource)
+
+    mark_read("resources")
 
     return render_template(
         'resources.html',
         allowed=allowed,
         locked=locked,
+        subjects=subjects,
+        search=search,
+        subject_filter=subject_filter,
+        level_filter=level_filter,
         user_level=user_level,
         can_manage_resources=can_manage_resources(),
         is_admin=is_admin()
@@ -671,6 +910,35 @@ def teacher_add_resource():
     conn.commit()
     conn.close()
     audit("created", "resource", resource_id, title)
+    return redirect(url_for('resources'))
+
+@app.post('/teacher/resources/<int:resource_id>/edit')
+def teacher_edit_resource(resource_id):
+    blocked = require_resource_manager()
+    if blocked:
+        return blocked
+
+    title = (request.form.get('title') or '').strip()
+    description = (request.form.get('description') or '').strip()
+    drive_url = (request.form.get('drive_url') or '').strip()
+    subject = (request.form.get('subject') or '').strip()
+    min_level = (request.form.get('min_level') or '7').strip()
+
+    if not title or not drive_url or not subject or min_level not in LEVEL_ORDER:
+        return redirect(url_for('resources'))
+    if not is_google_drive_url(drive_url):
+        return redirect(url_for('resources'))
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE resources
+        SET title = ?, description = ?, drive_url = ?, subject = ?, min_level = ?
+        WHERE id = ?
+    """, (title, description, drive_url, subject, min_level, resource_id))
+    conn.commit()
+    conn.close()
+    audit("updated", "resource", resource_id, title)
     return redirect(url_for('resources'))
 
 @app.post('/admin/resources/<int:resource_id>/delete')
@@ -854,6 +1122,8 @@ def teacher_chat():
         messages = cur.fetchall()
 
     conn.close()
+    if active_conversation:
+        mark_read("teacher_chat", active_conversation['id'])
     return render_template(
         'teacher_chat.html',
         teachers=teachers,
@@ -979,6 +1249,7 @@ def announcements():
     """)
     items = cur.fetchall()
     conn.close()
+    mark_read("announcements")
     return render_template(
         'announcements.html',
         items=items,
@@ -1003,6 +1274,7 @@ def news():
     """)
     items = cur.fetchall()
     conn.close()
+    mark_read("news")
     return render_template(
         'news.html',
         items=items,
@@ -1035,6 +1307,37 @@ def teacher_add_content():
     conn.close()
     audit("created", content_type, content_id, title)
     return redirect(url_for('announcements' if content_type == 'announcement' else 'news'))
+
+@app.post('/teacher/content/<int:content_id>/edit')
+def teacher_edit_content(content_id):
+    blocked = require_publisher()
+    if blocked:
+        return blocked
+
+    title = (request.form.get('title') or '').strip()
+    category = (request.form.get('category') or '').strip()
+    body = (request.form.get('body') or '').strip()
+
+    if not title or not body:
+        return redirect(url_for('announcements'))
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT content_type FROM content_items WHERE id = ?", (content_id,))
+    item = cur.fetchone()
+    if not item:
+        conn.close()
+        return redirect(url_for('announcements'))
+
+    cur.execute("""
+        UPDATE content_items
+        SET title = ?, category = ?, body = ?
+        WHERE id = ?
+    """, (title, category, body, content_id))
+    conn.commit()
+    conn.close()
+    audit("updated", item["content_type"], content_id, title)
+    return redirect(url_for('announcements' if item["content_type"] == 'announcement' else 'news'))
 
 @app.post('/admin/content/<int:content_id>/delete')
 def admin_delete_content(content_id):
@@ -1149,6 +1452,39 @@ def admin_dashboard():
         LIMIT 100
     """)
     audit_logs = cur.fetchall()
+    cur.execute("SELECT COUNT(*) AS count FROM users")
+    total_members = cur.fetchone()["count"]
+    cur.execute("SELECT COUNT(*) AS count FROM resources")
+    total_resources = cur.fetchone()["count"]
+    cur.execute("SELECT COUNT(*) AS count FROM content_items WHERE content_type = 'announcement'")
+    total_announcements = cur.fetchone()["count"]
+    cur.execute("SELECT COUNT(*) AS count FROM teacher_conversations WHERE status != 'closed'")
+    open_conversations = cur.fetchone()["count"]
+    cur.execute("""
+        SELECT resources.title, COUNT(resource_access.id) AS open_count
+        FROM resource_access
+        JOIN resources ON resources.id = resource_access.resource_id
+        GROUP BY resources.id
+        ORDER BY open_count DESC, resources.title
+        LIMIT 5
+    """)
+    top_resources = cur.fetchall()
+    cur.execute("""
+        SELECT users.first_name, users.last_name, users.email, COUNT(resource_access.id) AS open_count
+        FROM resource_access
+        JOIN users ON users.id = resource_access.user_id
+        GROUP BY users.id
+        ORDER BY open_count DESC, users.last_name
+        LIMIT 5
+    """)
+    active_users = cur.fetchall()
+    cur.execute("""
+        SELECT status, COUNT(*) AS count
+        FROM teacher_conversations
+        GROUP BY status
+        ORDER BY status
+    """)
+    conversation_stats = cur.fetchall()
     conn.close()
 
     return render_template(
@@ -1156,6 +1492,13 @@ def admin_dashboard():
         members=members,
         access_logs=access_logs,
         audit_logs=audit_logs,
+        total_members=total_members,
+        total_resources=total_resources,
+        total_announcements=total_announcements,
+        open_conversations=open_conversations,
+        top_resources=top_resources,
+        active_users=active_users,
+        conversation_stats=conversation_stats,
         levels=LEVEL_ORDER.keys()
     )
 
@@ -1188,10 +1531,90 @@ def terms():
 
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
-    """Handle forgot password request"""
-    email = request.json.get('email')
-    # MOCK FOR NOW - WILL UPDATE THIS WITH A REAL API SERVICE LATER - WILL NEED TO DO 2FA API IN NEXT COMMIT
-    return jsonify({'success': True, 'message': 'Password reset link sent to your school email!'})
+    """Reset a password using saved security questions."""
+    if not valid_json_csrf():
+        return jsonify({'success': False, 'message': 'Your session expired. Please refresh and try again.'}), 400
+
+    ensure_security_questions_table()
+    data = request.get_json(silent=True) or {}
+    action = data.get('action', 'questions')
+    email = (data.get('email') or '').strip().lower()
+
+    if login_is_locked(email):
+        return jsonify({'success': False, 'message': 'Too many attempts. Please wait 15 minutes and try again.'}), 429
+
+    if not is_valid_school_email(email):
+        record_failed_login(email)
+        return jsonify({'success': False, 'message': 'Enter a valid school email address.'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+    user = cur.fetchone()
+
+    if not user:
+        conn.close()
+        record_failed_login(email)
+        return jsonify({'success': False, 'message': 'No account was found for that email address.'}), 404
+
+    cur.execute("""
+        SELECT question_key, question_text, answer_hash
+        FROM user_security_questions
+        WHERE user_id = ?
+        ORDER BY id
+    """, (user['id'],))
+    questions = cur.fetchall()
+
+    if not questions:
+        conn.close()
+        return jsonify({
+            'success': False,
+            'message': 'This account does not have security questions set. Please contact an admin.'
+        }), 400
+
+    if action == 'questions':
+        conn.close()
+        return jsonify({
+            'success': True,
+            'questions': [
+                {'key': question['question_key'], 'text': question['question_text']}
+                for question in questions
+            ]
+        })
+
+    if action != 'reset':
+        conn.close()
+        return jsonify({'success': False, 'message': 'Invalid reset request.'}), 400
+
+    answers = data.get('answers') or {}
+    new_password = data.get('new_password') or ''
+    confirm_password = data.get('confirm_password') or ''
+
+    if new_password != confirm_password:
+        conn.close()
+        return jsonify({'success': False, 'message': 'New passwords do not match.'}), 400
+
+    if not is_strong_password(new_password):
+        conn.close()
+        return jsonify({
+            'success': False,
+            'message': 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
+        }), 400
+
+    for question in questions:
+        answer = normalize_security_answer(answers.get(question['question_key']))
+        if not answer or not bcrypt.check_password_hash(question['answer_hash'], answer):
+            conn.close()
+            record_failed_login(email)
+            return jsonify({'success': False, 'message': 'One or more security answers were incorrect.'}), 400
+
+    password_hash = bcrypt.generate_password_hash(new_password).decode()
+    cur.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user['id']))
+    conn.commit()
+    conn.close()
+    clear_failed_logins(email)
+    audit("updated", "user", user['id'], "Reset password using security questions")
+    return jsonify({'success': True, 'message': 'Password reset. You can now sign in.'})
 
 @app.post("/api/chat")
 def api_chat():
