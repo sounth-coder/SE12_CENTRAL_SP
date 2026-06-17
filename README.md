@@ -1,4 +1,6 @@
 # SE12_CENTRAL_SP
+<img width="941" height="409" alt="image" src="https://github.com/user-attachments/assets/b9b6de9e-a68c-4b02-9eef-7216ca60c047" />
+
 
 Girra Portal is a Flask-based student portal major project. It includes login/registration, resources, announcements/news, profile management, teacher chat, student ID barcodes, and an AI chat endpoint that can search school documents.
 
