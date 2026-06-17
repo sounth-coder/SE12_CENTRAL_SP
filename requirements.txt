@@ -1,0 +1,9 @@
+Flask
+Flask-Bcrypt
+python-dotenv
+google-generativeai
+python-barcode
+numpy
+sentence-transformers
+pypdf
+

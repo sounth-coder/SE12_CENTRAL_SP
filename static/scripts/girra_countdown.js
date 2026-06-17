@@ -54,6 +54,19 @@ const BELL_SCHEDULES = {
 };
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const TIMETABLE_STORAGE_KEY = "girra-countdown-timetable-code";
+const PERIOD_LABELS = {
+    "0": "Period 0",
+    RC: "Roll Call",
+    R: "Recess",
+    L1: "Lunch 1",
+    L2: "Lunch 2",
+    Bus1: "Bus 1",
+    Bus2: "Bus 2"
+};
+
+let importedTimetable = null;
+
 function getScheduleForDay(day) {
     return BELL_SCHEDULES[day] || null;
 }
@@ -83,11 +96,163 @@ function formatDuration(milliseconds) {
         .join(":");
 }
 
+function toDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function normalizeTime(time) {
+    if (!time || typeof time !== "string") {
+        return "";
+    }
+
+    const [hours, minutes] = time.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+        return "";
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function periodDisplayName(periodName) {
+    return PERIOD_LABELS[periodName] || `Period ${periodName}`;
+}
+
+function lessonTitle(lesson) {
+    if (!lesson) {
+        return "";
+    }
+
+    return lesson.subject_name || lesson.lesson_class_name || lesson.type || "";
+}
+
+function lessonMeta(lesson) {
+    if (!lesson) {
+        return "";
+    }
+
+    const details = [];
+    if (lesson.lesson_class_name && lesson.lesson_class_name !== lessonTitle(lesson)) {
+        details.push(lesson.lesson_class_name);
+    }
+    if (lesson.room_name) {
+        details.push(`Room ${lesson.room_name}`);
+    }
+    if (Array.isArray(lesson.teachers) && lesson.teachers.length) {
+        details.push(lesson.teachers.join(", "));
+    }
+
+    return details.join(" · ");
+}
+
+function periodLessonSummary(period) {
+    const lessons = Array.isArray(period.lessons) ? period.lessons : [];
+    const lesson = lessons[0];
+    const title = lessonTitle(lesson);
+    const meta = lessonMeta(lesson);
+
+    if (!title) {
+        return {
+            title: periodDisplayName(period.name),
+            meta: "",
+            hasLesson: false
+        };
+    }
+
+    return {
+        title,
+        meta,
+        hasLesson: true
+    };
+}
+
+function normalizeTimetable(rawTimetable) {
+    const containers = Array.isArray(rawTimetable) ? rawTimetable : [rawTimetable];
+    const dates = {};
+
+    containers.forEach((container) => {
+        const sourceDates = container && container.dates;
+        if (!sourceDates || typeof sourceDates !== "object") {
+            return;
+        }
+
+        Object.values(sourceDates).forEach((day) => {
+            if (!day || !day.date_name || !Array.isArray(day.period)) {
+                return;
+            }
+
+            const periods = day.period
+                .map((period) => ({
+                    name: String(period.name || ""),
+                    start: normalizeTime(period.start_time),
+                    end: normalizeTime(period.end_time),
+                    lessons: Array.isArray(period.lessons) ? period.lessons : []
+                }))
+                .filter((period) => period.name && period.start && period.end);
+
+            if (periods.length) {
+                dates[day.date_name] = {
+                    dayName: day.day_name || "",
+                    periods
+                };
+            }
+        });
+    });
+
+    if (!Object.keys(dates).length) {
+        throw new Error("No usable timetable dates were found.");
+    }
+
+    return { dates };
+}
+
+function loadStoredTimetable() {
+    const stored = localStorage.getItem(TIMETABLE_STORAGE_KEY);
+    const input = document.getElementById("timetable-code");
+
+    if (!stored) {
+        return;
+    }
+
+    if (input) {
+        input.value = stored;
+    }
+
+    importedTimetable = normalizeTimetable(JSON.parse(stored));
+}
+
+function getTimetableDay(date) {
+    if (!importedTimetable) {
+        return null;
+    }
+
+    return importedTimetable.dates[toDateKey(date)] || null;
+}
+
+function timetableScheduleForDate(date) {
+    const timetableDay = getTimetableDay(date);
+    if (!timetableDay) {
+        return null;
+    }
+
+    return timetableDay.periods.map((period) => {
+        const summary = periodLessonSummary(period);
+        return [summary.title, period.start, period.end, {
+            periodName: period.name,
+            periodLabel: periodDisplayName(period.name),
+            meta: summary.meta,
+            hasLesson: summary.hasLesson
+        }];
+    });
+}
+
 function getNextSchoolDay(date) {
     const next = new Date(date);
     do {
         next.setDate(next.getDate() + 1);
-    } while (!getScheduleForDay(next.getDay()));
+    } while (!timetableScheduleForDate(next) && !getScheduleForDay(next.getDay()));
     next.setHours(0, 0, 0, 0);
     return next;
 }
@@ -96,26 +261,95 @@ function renderBellList(schedule, now) {
     const list = document.getElementById("bell-list");
     list.innerHTML = "";
 
-    schedule.forEach(([name, start, end]) => {
+    schedule.forEach(([name, start, end, details = {}]) => {
         const startDate = dateAtTime(now, start);
         const endDate = dateAtTime(now, end);
         const isCurrent = start !== end && now >= startDate && now < endDate;
         const isPast = now >= endDate;
+        const label = details.periodLabel ? `${details.periodLabel}: ${name}` : name;
 
         const row = document.createElement("div");
         row.className = `bell-row${isCurrent ? " active" : ""}${isPast ? " past" : ""}`;
-        row.innerHTML = `
-            <span>${name}</span>
-            <strong>${start === end ? formatTime(start) : `${formatTime(start)} - ${formatTime(end)}`}</strong>
-        `;
+
+        const title = document.createElement("span");
+        title.textContent = label;
+
+        if (details.meta) {
+            const meta = document.createElement("small");
+            meta.textContent = details.meta;
+            title.appendChild(meta);
+        }
+
+        const time = document.createElement("strong");
+        time.textContent = start === end ? formatTime(start) : `${formatTime(start)} - ${formatTime(end)}`;
+
+        row.append(title, time);
         list.appendChild(row);
+    });
+}
+
+function renderTimetableStatus(message, isError = false) {
+    const status = document.getElementById("timetable-code-status");
+    if (!status) {
+        return;
+    }
+
+    status.textContent = message;
+    status.classList.toggle("error-text", isError);
+}
+
+function setupTimetableImport() {
+    const input = document.getElementById("timetable-code");
+    const addButton = document.getElementById("add-timetable-code");
+    const clearButton = document.getElementById("clear-timetable-code");
+
+    if (!input || !addButton || !clearButton) {
+        return;
+    }
+
+    try {
+        loadStoredTimetable();
+        if (importedTimetable) {
+            renderTimetableStatus("Timetable loaded on this device.");
+        }
+    } catch (error) {
+        importedTimetable = null;
+        renderTimetableStatus("Saved timetable code could not be read. Paste it again.", true);
+    }
+
+    addButton.addEventListener("click", () => {
+        const code = input.value.trim();
+        if (!code) {
+            renderTimetableStatus("Paste timetable JSON before adding it.", true);
+            return;
+        }
+
+        try {
+            const parsed = JSON.parse(code);
+            importedTimetable = normalizeTimetable(parsed);
+            localStorage.setItem(TIMETABLE_STORAGE_KEY, code);
+            renderTimetableStatus(`Timetable added with ${Object.keys(importedTimetable.dates).length} day(s).`);
+            updateCountdown();
+        } catch (error) {
+            importedTimetable = null;
+            renderTimetableStatus("That code is not valid timetable JSON.", true);
+        }
+    });
+
+    clearButton.addEventListener("click", () => {
+        importedTimetable = null;
+        input.value = "";
+        localStorage.removeItem(TIMETABLE_STORAGE_KEY);
+        renderTimetableStatus("Timetable code cleared.");
+        updateCountdown();
     });
 }
 
 function updateCountdown() {
     const now = new Date();
     const day = now.getDay();
-    const schedule = getScheduleForDay(day);
+    const timetableDay = getTimetableDay(now);
+    const schedule = timetableScheduleForDate(now) || getScheduleForDay(day);
     const dayElement = document.getElementById("countdown-day");
     const currentElement = document.getElementById("countdown-current");
     const rangeElement = document.getElementById("countdown-range");
@@ -137,11 +371,13 @@ function updateCountdown() {
     const upcomingBell = schedule.find(([, , end]) => now < dateAtTime(now, end));
     const firstBell = dateAtTime(now, schedule[0][1]);
 
-    dayElement.textContent = DAY_NAMES[day];
+    dayElement.textContent = timetableDay && timetableDay.dayName
+        ? `${DAY_NAMES[day]} · ${timetableDay.dayName}`
+        : DAY_NAMES[day];
     renderBellList(schedule, now);
 
     if (currentBlock) {
-        const [, start, end] = currentBlock;
+        const [, start, end, details = {}] = currentBlock;
         const endDate = dateAtTime(now, end);
         const nextEvent = schedule.find(([, eventStart, eventEnd]) => {
             const eventDate = dateAtTime(now, eventEnd);
@@ -150,14 +386,22 @@ function updateCountdown() {
 
         if (nextEvent) {
             currentElement.textContent = currentBlock[0];
-            rangeElement.textContent = `${formatTime(start)} - ${formatTime(end)}`;
+            rangeElement.textContent = [
+                details.periodLabel || "",
+                `${formatTime(start)} - ${formatTime(end)}`,
+                details.meta || ""
+            ].filter(Boolean).join(" · ");
             timeElement.textContent = formatDuration(dateAtTime(now, nextEvent[2]) - now);
             targetElement.textContent = `Until ${nextEvent[0]}`;
             return;
         }
 
         currentElement.textContent = currentBlock[0];
-        rangeElement.textContent = `${formatTime(start)} - ${formatTime(end)}`;
+        rangeElement.textContent = [
+            details.periodLabel || "",
+            `${formatTime(start)} - ${formatTime(end)}`,
+            details.meta || ""
+        ].filter(Boolean).join(" · ");
         timeElement.textContent = formatDuration(endDate - now);
         targetElement.textContent = `Until ${currentBlock[0]} ends`;
         return;
@@ -186,5 +430,6 @@ function updateCountdown() {
     targetElement.textContent = "Until next school day";
 }
 
+setupTimetableImport();
 updateCountdown();
 setInterval(updateCountdown, 1000);

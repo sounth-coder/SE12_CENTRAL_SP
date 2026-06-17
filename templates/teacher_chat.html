@@ -55,23 +55,29 @@
                         <h3>{% if can_answer %}Teacher Inbox{% else %}My Messages{% endif %}</h3>
                         <div class="conversation-list">
                             {% for conversation in conversations %}
-                            <a
-                                href="{{ url_for('teacher_chat', conversation_id=conversation.id) }}"
-                                class="conversation-link {% if active_conversation and active_conversation.id == conversation.id %}active{% endif %}"
-                            >
-                                <span class="conversation-subject">{{ conversation.subject }}</span>
-                                <span class="conversation-meta">
-                                    {% if can_answer %}
-                                    {{ conversation.student_first_name }} {{ conversation.student_last_name }}
-                                    {% else %}
-                                    {{ conversation.teacher_first_name }} {{ conversation.teacher_last_name }}
+                            <div class="conversation-list-item">
+                                <a
+                                    href="{{ url_for('teacher_chat', conversation_id=conversation.id) }}"
+                                    class="conversation-link {% if active_conversation and active_conversation.id == conversation.id %}active{% endif %}"
+                                >
+                                    <span class="conversation-subject">{{ conversation.subject }}</span>
+                                    <span class="conversation-meta">
+                                        {% if can_answer %}
+                                        {{ conversation.student_first_name }} {{ conversation.student_last_name }}
+                                        {% else %}
+                                        {{ conversation.teacher_first_name }} {{ conversation.teacher_last_name }}
+                                        {% endif %}
+                                        &middot; {{ conversation.status|title }}
+                                    </span>
+                                    {% if conversation.latest_body %}
+                                    <span class="conversation-preview">{{ conversation.latest_body }}</span>
                                     {% endif %}
-                                    &middot; {{ conversation.status|title }}
-                                </span>
-                                {% if conversation.latest_body %}
-                                <span class="conversation-preview">{{ conversation.latest_body }}</span>
-                                {% endif %}
-                            </a>
+                                </a>
+                                <form class="conversation-delete-form" method="post" action="{{ url_for('teacher_chat_delete', conversation_id=conversation.id) }}">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button class="icon-danger-button" type="submit" title="Delete chat" aria-label="Delete chat" onclick="return confirm('Delete this chat permanently? This removes all messages from the database.');">Delete</button>
+                                </form>
+                            </div>
                             {% else %}
                             <p class="muted-text">No teacher messages yet.</p>
                             {% endfor %}
@@ -82,16 +88,22 @@
                     <section class="chat-panel teacher-thread-panel">
                         {% if active_conversation %}
                         <div class="chat-header">
-                            <div class="chat-title">
-                                <span class="chat-dot"></span>
-                                {{ active_conversation.subject }}
+                            <div>
+                                <div class="chat-title">
+                                    <span class="chat-dot"></span>
+                                    {{ active_conversation.subject }}
+                                </div>
+                                <div class="chat-subtitle">
+                                    {{ active_conversation.student_first_name }} {{ active_conversation.student_last_name }}
+                                    to
+                                    {{ active_conversation.teacher_first_name }} {{ active_conversation.teacher_last_name }}
+                                    &middot; {{ active_conversation.status|title }}
+                                </div>
                             </div>
-                            <div class="chat-subtitle">
-                                {{ active_conversation.student_first_name }} {{ active_conversation.student_last_name }}
-                                to
-                                {{ active_conversation.teacher_first_name }} {{ active_conversation.teacher_last_name }}
-                                &middot; {{ active_conversation.status|title }}
-                            </div>
+                            <form class="inline-form chat-delete-form" method="post" action="{{ url_for('teacher_chat_delete', conversation_id=active_conversation.id) }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <button class="small-button danger" type="submit" onclick="return confirm('Delete this chat permanently? This removes all messages from the database.');">Delete chat</button>
+                            </form>
                         </div>
 
                         <!-- FULL MESSAGE HISTORY FOR THE SELECTED CONVERSATION -->
@@ -102,8 +114,16 @@
                                     <p class="message-author">{{ message.first_name }} {{ message.last_name }}</p>
                                     <p>{{ message.body }}</p>
                                     <p class="message-time">{{ message.created_at }}</p>
+                                    {% if message.sender_id == session.get('user_id') or (can_answer and active_conversation.teacher_id == session.get('user_id')) %}
+                                    <form class="message-delete-form" method="post" action="{{ url_for('teacher_chat_delete_message', conversation_id=active_conversation.id, message_id=message.id) }}">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <button class="message-delete-button" type="submit" onclick="return confirm('Delete this message permanently?');">Delete</button>
+                                    </form>
+                                    {% endif %}
                                 </div>
                             </div>
+                            {% else %}
+                            <p class="muted-text">No messages remain in this chat.</p>
                             {% endfor %}
                         </div>
 

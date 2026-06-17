@@ -51,7 +51,19 @@
           <h2>Countdown to HSC</h2>
           <p>Time remaining until the first 2026 HSC exam. Lock in, every session stacks.</p>
 
-          <div class="timer horizontal">
+          <div class="countdown-toggle" aria-label="Countdown display mode">
+            <button type="button" class="active" data-countdown-mode="days" aria-pressed="true">Days</button>
+            <button type="button" data-countdown-mode="full" aria-pressed="false">Full</button>
+          </div>
+
+          <div class="timer days-only" id="days-only-timer">
+            <div class="time-box">
+              <span class="number" id="total-days">000</span>
+              <span class="label">Days</span>
+            </div>
+          </div>
+
+          <div class="timer horizontal is-hidden" id="full-timer">
             <div class="time-box">
               <span class="number" id="months">00</span>
               <span class="label">Months</span>

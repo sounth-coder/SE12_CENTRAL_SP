@@ -83,6 +83,26 @@
                     <div class="bell-list" id="bell-list"></div>
                 </section>
 
+                <section class="info-panel timetable-import-panel">
+                    <div class="panel-heading-row">
+                        <div>
+                            <h3>Timetable Code</h3>
+                            <p class="muted-text">Paste your Sentral timetable JSON here to show exact lessons in the countdown.</p>
+                        </div>
+                        <button type="button" class="secondary-action" id="clear-timetable-code">Clear</button>
+                    </div>
+                    <textarea
+                        id="timetable-code"
+                        class="timetable-code-input"
+                        spellcheck="false"
+                        placeholder='Paste timetable JSON here, then press Add Timetable'
+                    ></textarea>
+                    <div class="timetable-actions">
+                        <button type="button" class="primary-action" id="add-timetable-code">Add Timetable</button>
+                        <p class="muted-text" id="timetable-code-status">No timetable code added yet.</p>
+                    </div>
+                </section>
+
                 <section class="info-panel">
                     <h3>Sport Notes</h3>
                     <div class="note-list">

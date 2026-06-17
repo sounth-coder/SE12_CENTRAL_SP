@@ -38,4 +38,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const csrfToken = window.GIRRA_CSRF_TOKEN;
+    const sendActivityHeartbeat = () => {
+        if (!csrfToken || document.hidden) {
+            return;
+        }
+
+        fetch('/api/activity/heartbeat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ active: true }),
+            keepalive: true
+        }).catch(() => {});
+    };
+
+    window.setTimeout(sendActivityHeartbeat, 10000);
+    window.setInterval(sendActivityHeartbeat, 60000);
+
 });

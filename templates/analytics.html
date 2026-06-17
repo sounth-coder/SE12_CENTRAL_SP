@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Girraween Student Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="page-container analytics-page">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Analytics</h1>
+                        <p class="muted-text">Your portal activity across {{ activity.year }}.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <strong>{{ activity.hours }}h {{ activity.remaining_minutes }}m</strong>
+                        <span class="muted-text">Total active time</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ activity.today_minutes }}m</strong>
+                        <span class="muted-text">Today on portal</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ activity.current_streak }}</strong>
+                        <span class="muted-text">Current day streak</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>{{ activity.total_logins }}</strong>
+                        <span class="muted-text">Account logins</span>
+                    </div>
+                </div>
+
+                <section class="info-panel activity-panel">
+                    <div class="panel-heading-row">
+                        <div>
+                            <h3>Activity Streak</h3>
+                            <p class="muted-text">{{ activity.active_days }} active days. Darker squares mean more minutes spent.</p>
+                        </div>
+                        <div class="activity-legend" aria-label="Activity intensity legend">
+                            <span>Less</span>
+                            <span class="activity-cell level-0"></span>
+                            <span class="activity-cell level-1"></span>
+                            <span class="activity-cell level-2"></span>
+                            <span class="activity-cell level-3"></span>
+                            <span class="activity-cell level-4"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-scroll">
+                        <div class="activity-grid" aria-label="Daily activity grid">
+                            {% for week in activity.weeks %}
+                            <div class="activity-week">
+                                {% for day in week %}
+                                    {% if day.empty %}
+                                    <span class="activity-cell empty" aria-hidden="true"></span>
+                                    {% else %}
+                                    <span
+                                        class="activity-cell level-{{ day.level }}{% if day.future %} future{% endif %}"
+                                        title="{{ day.label }}: {{ day.minutes }} minutes, {{ day.logins }} logins"
+                                        aria-label="{{ day.label }}: {{ day.minutes }} minutes, {{ day.logins }} logins"
+                                    ></span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/home.js') }}"></script>
+</body>
+</html>

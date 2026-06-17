@@ -19,7 +19,7 @@ embed_model = None
 def get_model():
     global embed_model
     if embed_model is None:
-        embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+        embed_model = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
     return embed_model
 
 import os
@@ -154,15 +154,32 @@ def harden_project_databases():
     harden_sqlite_permissions("girra_portal.db")
     harden_sqlite_permissions("knowledge.db")
 
+AI_UNAVAILABLE_REPLY = (
+    "CENTRAL's AI features are not available on this computer right now. "
+    "The main portal is still usable. Check that GEMINI_API_KEY is set, "
+    "dependencies are installed, and knowledge.db has been built with ingest_documents.py."
+)
+
 def search_documents(question, top_k=4):
+    if not os.path.exists("knowledge.db"):
+        return []
 
     conn = sqlite3.connect("knowledge.db")
     cur = conn.cursor()
 
-    q_emb = get_model().encode(question)
+    cur.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'documents'")
+    if not cur.fetchone():
+        conn.close()
+        return []
 
     cur.execute("SELECT filename, content, embedding FROM documents")
     rows = cur.fetchall()
+    conn.close()
+
+    if not rows:
+        return []
+
+    q_emb = get_model().encode(question)
 
     scored = []
 
@@ -175,8 +192,6 @@ def search_documents(question, top_k=4):
 
         scored.append((similarity, filename, content))
 
-    conn.close()
-
     scored.sort(reverse=True)
 
     return scored[:top_k]
@@ -186,9 +201,40 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-def ensure_portal_tables():
+def ensure_portal_tables():               ### REDUNDANCY ONE - TO PREVENT SQL ERRORS WHEN TABLES ARE UPDATED/ADDED. THIS FUNCTION CHECKS FOR EXISTENCE OF TABLES AND COLUMNS AND CREATES/UPDATES AS NEEDED.
     conn = get_db()
     cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            student_number TEXT UNIQUE,
+            password_hash TEXT NOT NULL,
+            access_level TEXT NOT NULL CHECK(access_level IN ('7','8','9','10','11','12','T')),
+            role TEXT NOT NULL DEFAULT 'student' CHECK(role IN ('student','teacher','admin')),
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+    """)
+    cur.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_users_student_number
+        ON users(student_number)
+        WHERE student_number IS NOT NULL;
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS resources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            drive_url TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            min_level TEXT NOT NULL CHECK(min_level IN ('7','8','9','10','11','12','T')),
+            created_by INTEGER,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+    """)
 
     cur.execute("PRAGMA table_info(users)")
     user_columns = {column["name"] for column in cur.fetchall()}
@@ -274,12 +320,37 @@ def ensure_portal_tables():
         );
     """)
     cur.execute("""
+        CREATE TABLE IF NOT EXISTS login_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            ip_address TEXT,
+            user_agent TEXT,
+            created_at TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS user_activity_daily (
+            user_id INTEGER NOT NULL,
+            activity_date TEXT NOT NULL,
+            active_minutes INTEGER NOT NULL DEFAULT 0,
+            login_count INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT DEFAULT (datetime('now')),
+            PRIMARY KEY (user_id, activity_date),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+    """)
+    cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_teacher_conversations_student
         ON teacher_conversations(student_id, updated_at);
     """)
     cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_teacher_conversations_teacher
         ON teacher_conversations(teacher_id, updated_at);
+    """)
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_login_events_user_created
+        ON login_events(user_id, created_at);
     """)
     conn.commit()
     conn.close()
@@ -407,6 +478,125 @@ def audit(action: str, target_type: str, target_id=None, details: str = ""):
     conn.commit()
     conn.close()
 
+def record_login_event(user_id: int):                   ### USED FOR ANALYTICS AND SECURITY MONITORING - STORES LOGIN TIME, IP, AND USER AGENT. ALSO UPDATES DAILY ACTIVITY SUMMARY.
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO login_events (user_id, ip_address, user_agent)
+        VALUES (?, ?, ?)
+    """, (user_id, request_ip(), request.headers.get("User-Agent", "")))
+    cur.execute("""
+        INSERT INTO user_activity_daily (user_id, activity_date, active_minutes, login_count, updated_at)
+        VALUES (?, date('now', 'localtime'), 0, 1, datetime('now'))
+        ON CONFLICT(user_id, activity_date)
+        DO UPDATE SET
+            login_count = login_count + 1,
+            updated_at = excluded.updated_at
+    """, (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def record_activity_minute(user_id: int, minutes: int = 1):
+    minutes = max(1, min(int(minutes), 5))
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO user_activity_daily (user_id, activity_date, active_minutes, login_count, updated_at)
+        VALUES (?, date('now', 'localtime'), ?, 0, datetime('now'))
+        ON CONFLICT(user_id, activity_date)
+        DO UPDATE SET
+            active_minutes = active_minutes + excluded.active_minutes,
+            updated_at = excluded.updated_at
+    """, (user_id, minutes))
+    conn.commit()
+    conn.close()
+
+
+def get_user_activity_summary(user_id: int):           ### SUMMARISES DATA ON A VERY NEAT HEATMAP 
+    today_date = date.today()
+    start_date = date(today_date.year, 1, 1)
+    end_date = date(today_date.year, 12, 31)
+    days = (end_date - start_date).days + 1
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT activity_date, active_minutes, login_count
+        FROM user_activity_daily
+        WHERE user_id = ? AND activity_date BETWEEN ? AND ?
+    """, (user_id, start_date.isoformat(), end_date.isoformat()))
+    activity_by_date = {
+        row["activity_date"]: {
+            "minutes": row["active_minutes"],
+            "logins": row["login_count"],
+        }
+        for row in cur.fetchall()
+    }
+    cur.execute("SELECT COUNT(*) AS count FROM login_events WHERE user_id = ?", (user_id,))
+    total_logins = cur.fetchone()["count"]
+    conn.close()
+
+    days_data = []
+    total_minutes = 0
+    active_days = 0
+    for offset in range(days):
+        current_date = start_date + timedelta(days=offset)
+        key = current_date.isoformat()
+        values = activity_by_date.get(key, {"minutes": 0, "logins": 0})
+        minutes = values["minutes"]
+        logins = values["logins"]
+        is_future = current_date > today_date
+        if not is_future:
+            total_minutes += minutes
+        if not is_future and (minutes > 0 or logins > 0):
+            active_days += 1
+        days_data.append({
+            "date": key,
+            "label": current_date.strftime("%d %b %Y"),
+            "minutes": minutes,
+            "logins": logins,
+            "future": is_future,
+            "level": activity_level(minutes),
+        })
+
+    current_streak = 0
+    past_days = [item for item in days_data if not item["future"]]
+    for item in reversed(past_days):
+        if item["minutes"] > 0 or item["logins"] > 0:
+            current_streak += 1
+        else:
+            break
+
+    padded_days = [{"empty": True} for _ in range(start_date.weekday())] + days_data
+    weeks = [padded_days[i:i + 7] for i in range(0, len(padded_days), 7)]
+    today = past_days[-1] if past_days else {"minutes": 0, "logins": 0}
+
+    return {
+        "weeks": weeks,
+        "year": today_date.year,
+        "total_minutes": total_minutes,
+        "hours": total_minutes // 60,
+        "remaining_minutes": total_minutes % 60,
+        "today_minutes": today["minutes"],
+        "today_logins": today["logins"],
+        "total_logins": total_logins,
+        "active_days": active_days,
+        "current_streak": current_streak,
+    }
+
+
+def activity_level(minutes: int) -> int:
+    if minutes <= 0:
+        return 0
+    if minutes < 5:
+        return 1
+    if minutes < 15:
+        return 2
+    if minutes < 30:
+        return 3
+    return 4
+
 def log_resource_access(user_id: int, resource_id: int): 
     ip = request_ip()          #LOGGING OF IP'S TO DETER RESOURCE DISTRIBUTION/ABUSE OF SERVICE
     ua = request.headers.get("User-Agent", "")
@@ -522,7 +712,11 @@ def get_notification_counts():
 
 @app.context_processor
 def inject_notifications():
-    return {"notifications": get_notification_counts()}
+    return {
+        "notifications": get_notification_counts(),
+        "is_teacher": is_teacher(),
+        "is_admin": is_admin(),
+    }
 
 
 ensure_portal_tables()
@@ -577,6 +771,7 @@ def login():
             session['role'] = role
             session['name'] = user['first_name']
             session['full_name'] = f"{user['first_name']} {user['last_name']}"
+            record_login_event(user['id'])
 
             return redirect(url_for('home'))  
 
@@ -723,10 +918,38 @@ def home():
     )
 
 
+@app.route('/analytics')
+def analytics():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    activity = get_user_activity_summary(session['user_id'])
+    return render_template('analytics.html', activity=activity)
+
+
+@app.post('/api/activity/heartbeat')
+def activity_heartbeat():
+    if not session.get('logged_in'):
+        return jsonify({"success": False}), 401
+    if not valid_json_csrf():
+        return jsonify({"success": False, "message": "Invalid CSRF token"}), 400
+
+    now = time.time()
+    last_ping = session.get("last_activity_heartbeat_at", 0)
+    if now - float(last_ping or 0) < 50:
+        return jsonify({"success": True, "recorded": False})
+
+    session["last_activity_heartbeat_at"] = now
+    record_activity_minute(session['user_id'], 1)
+    return jsonify({"success": True, "recorded": True})
+
+
 @app.route('/student-id')
 def student_id():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
+    if is_teacher():
+        return redirect(url_for('home'))
     
     username = session.get('full_name', session.get('name', 'Student'))
     student_number = session.get('student_number') or str(session.get('user_id'))
@@ -1212,6 +1435,55 @@ def teacher_chat_reply(conversation_id):
     conn.close()
     return redirect(url_for('teacher_chat', conversation_id=conversation_id))
 
+@app.post('/teacher-chat/<int:conversation_id>/messages/<int:message_id>/delete')                ### DELETING MESSAGES - ONLY THE SENDER OR A TEACHER CAN DELETE MESSAGES, AND DELETING A MESSAGE DOES NOT DELETE THE CONVERSATION.
+def teacher_chat_delete_message(conversation_id, message_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if not valid_csrf():
+        return "Your session expired. Please try again.", 400
+
+    user_id = session.get('user_id')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT teacher_messages.*, teacher_conversations.student_id, teacher_conversations.teacher_id
+        FROM teacher_messages
+        JOIN teacher_conversations ON teacher_conversations.id = teacher_messages.conversation_id
+        WHERE teacher_messages.id = ?
+          AND teacher_messages.conversation_id = ?
+          AND (teacher_conversations.student_id = ? OR teacher_conversations.teacher_id = ?)
+    """, (message_id, conversation_id, user_id, user_id))
+    message = cur.fetchone()
+
+    if not message:
+        conn.close()
+        return redirect(url_for('teacher_chat'))
+
+    can_delete_message = message['sender_id'] == user_id or (
+        can_answer_teacher_messages() and message['teacher_id'] == user_id
+    )
+    if not can_delete_message:
+        conn.close()
+        return "Forbidden", 403
+
+    cur.execute("DELETE FROM teacher_messages WHERE id = ?", (message_id,))
+    cur.execute("""
+        UPDATE teacher_conversations
+        SET updated_at = COALESCE(
+            (
+                SELECT MAX(created_at)
+                FROM teacher_messages
+                WHERE conversation_id = ?
+            ),
+            datetime('now')
+        )
+        WHERE id = ?
+    """, (conversation_id, conversation_id))
+    conn.commit()
+    conn.close()
+    audit("deleted", "teacher_message", message_id, f"Conversation {conversation_id}")
+    return redirect(url_for('teacher_chat', conversation_id=conversation_id))
+
 @app.post('/teacher-chat/<int:conversation_id>/close')
 def teacher_chat_close(conversation_id):
     if not session.get('logged_in'):
@@ -1231,6 +1503,38 @@ def teacher_chat_close(conversation_id):
     conn.commit()
     conn.close()
     return redirect(url_for('teacher_chat', conversation_id=conversation_id))
+
+@app.post('/teacher-chat/<int:conversation_id>/delete')
+def teacher_chat_delete(conversation_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if not valid_csrf():
+        return "Your session expired. Please try again.", 400
+
+    user_id = session.get('user_id')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT *
+        FROM teacher_conversations
+        WHERE id = ? AND (student_id = ? OR teacher_id = ?)
+    """, (conversation_id, user_id, user_id))
+    conversation = cur.fetchone()
+
+    if not conversation:
+        conn.close()
+        return redirect(url_for('teacher_chat'))
+
+    cur.execute("DELETE FROM teacher_messages WHERE conversation_id = ?", (conversation_id,))
+    cur.execute("""
+        DELETE FROM user_read_state
+        WHERE item_type = 'teacher_chat' AND item_id = ?
+    """, (conversation_id,))
+    cur.execute("DELETE FROM teacher_conversations WHERE id = ?", (conversation_id,))
+    conn.commit()
+    conn.close()
+    audit("deleted", "teacher_conversation", conversation_id, conversation['subject'])
+    return redirect(url_for('teacher_chat'))
 
 @app.route('/announcements')
 def announcements():
@@ -1626,13 +1930,20 @@ def api_chat():
         return jsonify(error="Message required"), 400
 
     try:
+        if not GEMINI_API_KEY:
+            return jsonify(reply=AI_UNAVAILABLE_REPLY, ai_available=False), 200
 
-        results = search_documents(msg)
+        try:
+            results = search_documents(msg)
+        except Exception:
+            results = []
 
         context = "\n\n".join(
             f"[{file}]\n{content}"
             for _, file, content in results
         )
+        if not context:
+            context = "No local school document context is available on this computer."
 
         response = model.generate_content(f"""
 You are CENTRAL, the AI academic assistant for Girra Student Portal.
@@ -1696,8 +2007,8 @@ Student Question:
 
         return jsonify(reply=response.text)
 
-    except Exception as e:
-        return jsonify(error=str(e)), 500
+    except Exception:
+        return jsonify(reply=AI_UNAVAILABLE_REPLY, ai_available=False), 200
 
 
 ### STUDENT BAR_CODE GENERATOR 
