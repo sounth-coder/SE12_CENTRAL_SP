@@ -48,11 +48,12 @@ For local testing, `SECRET_KEY` can be left blank because the app will generate 
 
 5. Cache the AI document-search model.
 
-The portal includes `knowledge.db`, but the AI document search also needs the `all-MiniLM-L6-v2` embedding model cached on your computer. Run this once with internet access:
+The portal does not include `knowledge.db`, so the AI document search database and embedding model must be prepared locally. Run this once with internet access:
 
 ```bash
 python ingest_documents.py
 ```
+This may take 10-30 minutes on a fresh computer. This is normal. Do not kill the process. Let it cache, and once it is cached the next step can be followed. 
 
 6. Run the app. 
 
@@ -67,7 +68,7 @@ The link would usually be:
 http://127.0.0.1:5000
 ```
 
-IF not that link, select the generated one in the terminal from flask. 
+If Flask shows a different link in the terminal, open that link instead.
 
 And you're set!!
 
@@ -77,15 +78,15 @@ And you're set!!
 This repository already includes the prepared SQLite databases:
 
 - `girra_portal.db` for users, resources, announcements, teacher chat, and portal data
-- `knowledge.db` for AI document search
 
-You do not need to run `init_db.py` or `ingest_documents.py` for normal setup.
+CAUTION: `knowledge.db` is not included in this repository. Run `python ingest_documents.py` once during setup to create it - Follow the setup steps above.
+
+You do not need to run `init_db.py` for normal setup.
 
 Only run `init_db.py` if you want to recreate/reset the main portal database. 
 CAUTION: DATABASE MAY BE OVER-WRITTEN IF YOU RUN THIS FILE 
 
-Only run `ingest_documents.py` if you change the PDFs in `documents/` and want to rebuild the AI search database. You can add other resources and test the AI chatboxes interpretation functionality. 
-
+You may add additional documents to the `documents` folder and run `python ingest_documents.py` again if you want the AI to search those documents too.
 
 
 ## Demo Login
