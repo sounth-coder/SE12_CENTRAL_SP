@@ -23,12 +23,20 @@ The required packages are:
 
 `sentence-transformers` will also install larger machine-learning dependencies such as PyTorch/Transformers. The AI document search uses the `all-MiniLM-L6-v2` model. If the model is not already cached locally, run `python ingest_documents.py` once with internet access so it can download the model. If the model is still missing, the portal remains usable and CENTRAL can still answer using Gemini, but local school-document search may be skipped.
 
+## Windows prerequisite
+Install the Microsoft Visual C++ Redistributable (x64) before running the project.
+This is required by PyTorch, which powers the document-search embeddings.
 
+If you do not have it, you can install via: 
+
+```text
+https://aka.ms/vs/17/release/vc_redist.x64.exe
+```
 
 ## SETUP 
 1. Clone or download the project. 
 
-2. Open a terminal in the project. 
+2. Open a terminal in the project folder by right clicking inside the folder in file explorer (Open in Terminal)
 
 3. Install the Python dependencies with:
 
