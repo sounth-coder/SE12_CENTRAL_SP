@@ -114,4 +114,6 @@ sountharikan.thirukkumaran@education.nsw.gov.au
 mr.patel@education.nsw.gov.au
 ```
 
+You may also attempt registering for a new account, however this feature is reserved for students (i.e. they must use @education.nsw.gov.au), and they'll automatically be assigned the lowest access privelege, unless an admin logs in, and changes their access role. 
+
 They are all different roles, so by logging into each one, you can observe the Role Based Access Control (RBAC) of the portal. 
