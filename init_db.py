@@ -165,13 +165,6 @@ ON teacher_conversations(teacher_id, updated_at);
 password = bcrypt.generate_password_hash("Password123!").decode()
 
 users = [
-    ('Abby','Johnson','abby.johnson@education.nsw.gov.au','444628401', password,'10','student'),                              #CHANGE - NOT REAL DATA
-    ('Bob','Smith','bob.smith@education.nsw.gov.au','444628402', password,'11','student'),                                    #CHANGE - NOT REAL DATA
-    ('Catherine','Davis','catherine.davis@education.nsw.gov.au','444628403', password,'12','student'),                        #CHANGE - NOT REAL DATA
-    ('Daniel','Brown','daniel.brown@education.nsw.gov.au','444628404', password,'9','student'),                               #CHANGE - NOT REAL DATA
-    ('Eva','Martinez','eva.martinez@education.nsw.gov.au','444628405', password,'10','student'),                              #CHANGE - NOT REAL DATA
-    ('Frank','Wilson','frank.wilson@education.nsw.gov.au','444628406', password,'11','student'),                              #CHANGE - NOT REAL DATA
-    ('Grace','Lee','grace.lee@education.nsw.gov.au','444628407', password,'12','student'),                                    #CHANGE - NOT REAL DATA
     ('Aarav','S','aarav.s@education.nsw.gov.au','444456345', password,'12','student'),
     ('Raguram','P','raguram.ps@education.nsw.gov.au','443547291', password,'12','student'),
     ('Sountharikan','Thirukkumaran','sountharikan.thirukkumaran@education.nsw.gov.au','444628464', password,'12','admin'),
