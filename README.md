@@ -53,13 +53,21 @@ TRUST_PROXY_HEADERS=false
 
 For local testing, `SECRET_KEY` can be left blank because the app will generate a temporary one. However, users may be logged out whenever the app restarts.
 
-6. Run the app. 
+6. Cache the AI document-search model.
+
+The portal includes `knowledge.db`, but the AI document search also needs the `all-MiniLM-L6-v2` embedding model cached on your computer. Run this once with internet access:
+
+```bash
+python ingest_documents.py
+```
+
+7. Run the app. 
 
 ```bash
 python app.py
 ```
 
-7. Open the portal in browser. 
+8. Open the portal in browser. 
 
 The link would usually be: 
 ```text
