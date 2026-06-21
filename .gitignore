@@ -8,7 +8,6 @@ __pycache__/
 venv/
 env/
 
-*.db
 
 .DS_Store
 Thumbs.db
