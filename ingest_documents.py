@@ -2,6 +2,7 @@ from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import sqlite3
 import os
+### EXECUTE THIS PROGRAM IF THE KNOWLEDGE.DB IS NOT PRESENT. THIS PROGRAM CREATES THE DB THAT GEMINI USES TO ANSWER QUESTIONS. 
 
 DOC_FOLDER = "documents"
 
