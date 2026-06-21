@@ -30,20 +30,13 @@ The required packages are:
 
 2. Open a terminal in the project. 
 
-3. Optional but recommended: create a virtual environment.
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-4. Install the Python dependencies with:
+3. Install the Python dependencies with:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Create a .env file in the project folder. COPY THE FOLLOWING TEXT IN THE BOX TO THE ENV FILE! 
+4. Create a .env file in the project folder. COPY THE FOLLOWING TEXT IN THE BOX TO THE ENV FILE! 
 
 ```env
 GEMINI_API_KEY=[API KEY IS IN PORTFOLIO]
@@ -53,7 +46,7 @@ TRUST_PROXY_HEADERS=false
 
 For local testing, `SECRET_KEY` can be left blank because the app will generate a temporary one. However, users may be logged out whenever the app restarts.
 
-6. Cache the AI document-search model.
+5. Cache the AI document-search model.
 
 The portal includes `knowledge.db`, but the AI document search also needs the `all-MiniLM-L6-v2` embedding model cached on your computer. Run this once with internet access:
 
@@ -61,13 +54,13 @@ The portal includes `knowledge.db`, but the AI document search also needs the `a
 python ingest_documents.py
 ```
 
-7. Run the app. 
+6. Run the app. 
 
 ```bash
 python app.py
 ```
 
-8. Open the portal in browser. 
+7. Open the portal in browser. 
 
 The link would usually be: 
 ```text
