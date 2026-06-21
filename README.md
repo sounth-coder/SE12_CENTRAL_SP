@@ -64,6 +64,7 @@ python app.py
 The link would usually be: 
 ```text
 http://127.0.0.1:5000
+```
 
 IF not that link, select the generated one in the terminal from flask. 
 
