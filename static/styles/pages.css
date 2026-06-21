@@ -701,6 +701,21 @@
     margin-bottom: 0.75rem;
 }
 
+.news-embed-panel {
+    padding: 0;
+    overflow: hidden;
+    background: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.news-embed-frame {
+    display: block;
+    width: 100%;
+    min-height: 700px;
+    border: 0;
+    background: #fff;
+}
+
 .nav-badge {
     min-width: 1.35rem;
     height: 1.35rem;

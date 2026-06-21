@@ -210,22 +210,22 @@ for first_name, last_name, email, student_number, _, _, _ in users:
 resources = [
     ('Year 7 Maths – BODMAS Pack',
      'BODMAS drills + worked examples',
-     'https://drive.google.com/file/d/AAA/view',
+     'https://go.clueylearning.com.au/en/maths-worksheets/free-printable-pdfs/year-7/Year-7-BODMAS-Maths-Using-order-of-operations-to-solve-expressions-1-clueylearning.com.au-1300182000.pdf',
      'Math', '7'),
 
     ('Year 11 Physics – Kinematics Pack',
      'SUVAT drills + worked examples',
-     'https://drive.google.com/file/d/AAA/view',
+     'https://artofsmart.com.au/physics/year-11-hsc-physics-kinematics/',
      'Physics', '11'),
 
-    ('Year 12 Maths – Integration Drill',
-     'Hard HSC-style integrals',
-     'https://drive.google.com/file/d/BBB/view',
-     'Math', '12'),
+    ('Year 12 GHS Shared HSC Google Drive',
+     'The ultimate mega-drive.',
+     'https://drive.google.com/drive/folders/1YyBVNd76Ps28ngT-mz1c1tsgCwsAvB2X',
+     'All', '12'),
 
     ('Teacher Assessment Templates',
      'Internal use only',
-     'https://drive.google.com/file/d/CCC/view',
+     'https://www.nsw.gov.au/education-and-training/nesa/teacher-accreditation/resources/effective-documentary-evidence/assessment-task-example',
      'Admin', 'T'),
 ]
 
